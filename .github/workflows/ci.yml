@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['*']
+
+jobs:
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Check for debug code
+        run: |
+          echo "Checking for console.log statements..."
+          if grep -r "console\.log" src/ --exclude-dir=node_modules; then
+            echo "⚠️ Warning: console.log found in source code"
+            exit 1
+          else
+            echo "✓ No console.log found"
+          fi
+
+      - name: Run knip (dead code detection)
+        run: |
+          echo "Running knip to detect dead code..."
+          npx knip --no-exit-code || true
+          echo ""
+          echo "Note: knip results are informational only and won't fail the build"
+
+  knip-check:
+    name: Dead Code Detection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run knip
+        run: |
+          echo "🔍 Detecting unused files, exports, and dependencies..."
+          npx knip --reporter json > knip-report.json || true
+          npx knip || true
+
+      - name: Upload knip report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: knip-report
+          path: knip-report.json
+          retention-days: 7
+
+  asset-check:
+    name: Asset Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify required assets
+        run: |
+          echo "Checking required assets in public/ directory..."
+          
+          REQUIRED_ASSETS=(
+            "public/GameTitle.png"
+            "public/akyo_devilyagi.png"
+            "public/akyo_humanoid.png"
+            "public/akyo_yagi.png"
+          )
+          
+          MISSING_ASSETS=()
+          
+          for asset in "${REQUIRED_ASSETS[@]}"; do
+            if [ ! -f "$asset" ]; then
+              MISSING_ASSETS+=("$asset")
+            fi
+          done
+          
+          if [ ${#MISSING_ASSETS[@]} -eq 0 ]; then
+            echo "✓ All required assets are present"
+          else
+            echo "✗ Missing assets:"
+            printf '%s\n' "${MISSING_ASSETS[@]}"
+            exit 1
+          fi
+
+  build-preview:
+    name: Build Preview
+    runs-on: ubuntu-latest
+    needs: [test, knip-check, asset-check]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for production
+        run: npm run build
+        env:
+          VITE_DEBUG: false
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+      - name: Check build size
+        run: |
+          echo "Build size:"
+          du -sh dist/
+          echo ""
+          echo "Detailed breakdown:"
+          du -h dist/* | sort -h
