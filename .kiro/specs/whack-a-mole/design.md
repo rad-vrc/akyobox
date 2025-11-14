@@ -8,7 +8,7 @@
 
 ### Component Structure
 
-```
+```text
 App
 ├── GameTitle (タイトルロゴ表示)
 ├── StartScreen (ゲーム開始画面)
