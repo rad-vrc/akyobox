@@ -92,27 +92,34 @@ jobs:
       - name: Verify required assets
         run: |
           echo "Checking required assets in public/ directory..."
-          
+
           REQUIRED_ASSETS=(
             "public/GameTitle.png"
             "public/akyo_devilyagi.png"
             "public/akyo_humanoid.png"
             "public/akyo_yagi.png"
+            "public/fallback.png"
           )
-          
-          MISSING_ASSETS=()
-          
+
+          PROBLEM_ASSETS=()
+
           for asset in "${REQUIRED_ASSETS[@]}"; do
             if [ ! -f "$asset" ]; then
-              MISSING_ASSETS+=("$asset")
+              PROBLEM_ASSETS+=("Missing: $asset")
+              continue
+            fi
+
+            SIZE=$(stat -c%s "$asset")
+            if [ "$SIZE" -eq 0 ]; then
+              PROBLEM_ASSETS+=("Zero-byte file: $asset")
             fi
           done
-          
-          if [ ${#MISSING_ASSETS[@]} -eq 0 ]; then
-            echo "✓ All required assets are present"
+
+          if [ ${#PROBLEM_ASSETS[@]} -eq 0 ]; then
+            echo "✓ All required assets exist and are non-empty"
           else
-            echo "✗ Missing assets:"
-            printf '%s\n' "${MISSING_ASSETS[@]}"
+            echo "✗ Asset verification failed:"
+            printf '%s\n' "${PROBLEM_ASSETS[@]}"
             exit 1
           fi
 
