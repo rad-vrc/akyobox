@@ -497,6 +497,12 @@ const safeLocalStorageSet = (key: string, value: string) => {
 
 このプロジェクトでは環境変数は不要です。すべての設定はクライアントサイドで管理されます。
 
+## Environment Configuration
+
+- デバッグモード切り替えには `import.meta.env.VITE_DEBUG` を使用する。`src/vite-env.d.ts` に `interface ImportMetaEnv { readonly VITE_DEBUG: string }` を追加して型情報を保証する。
+- 開発時は `.env.local` で `VITE_DEBUG=true` を設定し、ターミナルに表示されるデバッグ情報やゲーム内オーバーレイを表示。
+- 本番ビルドや Vercel 環境では `VITE_DEBUG` を未定義または `false` にし、`npm run build` 時点で dead code elimination されるよう `if (import.meta.env.VITE_DEBUG === 'true')` で条件分岐する。
+
 ## Performance Considerations
 
 ### 最適化戦略
