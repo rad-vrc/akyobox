@@ -75,6 +75,11 @@ interface StartScreenProps {
 }
 ```
 
+**UI仕様:**
+- ヒーローセクションでタイトルロゴと 1 行説明を表示
+- 「How to Play」カードを配置し、ターゲット画像とデコイ画像の違い、制限時間、操作方法（クリック/タップ）を箇条書きで案内
+- スタート/設定ボタンはモバイルでは縦積み、デスクトップでは横並びレイアウトを採用
+
 ### 3. GameScreen Component
 
 **責任:** ゲームプレイ中の画面を管理
@@ -347,6 +352,9 @@ const loadCustomImages = () => {
 - フルスクリーンレイアウト（`width: 100vw`, `height: 100vh`）
 - GameBoardは相対配置（`position: relative`）
 - AkyoItemは絶対配置（`position: absolute`）
+- テーマトークンを用意：`--akyo-bg`, `--akyo-surface`, `--akyo-accent`, `--akyo-radius`, `--akyo-shadow` を `:root` に定義し、光/ダーク両対応
+- レスポンシブブレークポイント（`<600px`, `600-1024px`, `>1024px`）でレイアウトを最適化し、ボタンや情報カードの配置を変える
+- 設定画面はモーダル表示とし、背景スクロールをロック＆フォーカストラップを適用する
 
 ### レスポンシブデザイン
 
@@ -400,6 +408,24 @@ const loadCustomImages = () => {
   }
 }
 ```
+
+### Reduced Motion 対応
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### UI アクセシビリティ
+
+- `prefers-color-scheme` に応じてテーマトークンを切り替え、コントラスト比 4.5:1 以上を確保
+- `aria-live="polite"` でスコアとタイマーを読み上げ、ターゲット/デコイを `aria-label` で説明
+- キーボードフォーカスインジケーターを標準化し、モーダル表示時は `Esc` で閉じる
 
 ## Error Handling
 
