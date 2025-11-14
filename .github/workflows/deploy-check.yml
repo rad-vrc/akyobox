@@ -1,0 +1,139 @@
+name: Deploy Ready Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  deploy-ready:
+    name: Comprehensive Deploy Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 1️⃣ Build Check
+        id: build
+        run: |
+          echo "Running production build..."
+          npm run build
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 2️⃣ Asset Check
+        id: assets
+        run: |
+          echo "Verifying required assets..."
+          
+          REQUIRED_ASSETS=(
+            "public/GameTitle.png"
+            "public/akyo_devilyagi.png"
+            "public/akyo_humanoid.png"
+            "public/akyo_yagi.png"
+          )
+          
+          ALL_PRESENT=true
+          
+          for asset in "${REQUIRED_ASSETS[@]}"; do
+            if [ -f "$asset" ]; then
+              echo "✓ $asset"
+            else
+              echo "✗ $asset (MISSING)"
+              ALL_PRESENT=false
+            fi
+          done
+          
+          if [ "$ALL_PRESENT" = true ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: 3️⃣ Code Quality Check
+        id: quality
+        run: |
+          echo "Running linter..."
+          npm run lint
+          
+          echo "Running type check..."
+          npx tsc --noEmit
+          
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 4️⃣ Debug Code Check
+        id: debug
+        run: |
+          echo "Checking for debug code..."
+          
+          DEBUG_FOUND=false
+          
+          if grep -r "console\.log\|console\.debug\|debugger" src/ --exclude-dir=node_modules; then
+            echo "⚠️ Debug code found in source"
+            DEBUG_FOUND=true
+          fi
+          
+          if grep -r "VITE_DEBUG.*true" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "⚠️ VITE_DEBUG=true found"
+            DEBUG_FOUND=true
+          fi
+          
+          if [ "$DEBUG_FOUND" = true ]; then
+            echo "status=warning" >> $GITHUB_OUTPUT
+            echo "⚠️ Warning: Debug code detected but not blocking deployment"
+          else
+            echo "✓ No debug code found"
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 5️⃣ Build Size Analysis
+        run: |
+          echo "Analyzing build size..."
+          echo ""
+          echo "Total build size:"
+          du -sh dist/
+          echo ""
+          echo "Asset breakdown:"
+          du -h dist/assets/* 2>/dev/null | sort -h || echo "No assets found"
+          echo ""
+          
+          # Check if build is too large (warning at 5MB)
+          SIZE=$(du -sm dist/ | cut -f1)
+          if [ $SIZE -gt 5 ]; then
+            echo "⚠️ Warning: Build size is ${SIZE}MB (consider optimization)"
+          else
+            echo "✓ Build size is acceptable: ${SIZE}MB"
+          fi
+
+      - name: 📋 Summary
+        if: always()
+        run: |
+          echo "================================"
+          echo "   DEPLOY READINESS SUMMARY"
+          echo "================================"
+          echo ""
+          echo "✓ Build: ${{ steps.build.outputs.status || 'failed' }}"
+          echo "✓ Assets: ${{ steps.assets.outputs.status || 'failed' }}"
+          echo "✓ Quality: ${{ steps.quality.outputs.status || 'failed' }}"
+          echo "✓ Debug: ${{ steps.debug.outputs.status || 'warning' }}"
+          echo ""
+          
+          if [ "${{ steps.build.outputs.status }}" = "success" ] && \
+             [ "${{ steps.assets.outputs.status }}" = "success" ] && \
+             [ "${{ steps.quality.outputs.status }}" = "success" ]; then
+            echo "🚀 READY TO DEPLOY!"
+          else
+            echo "❌ NOT READY - Please fix the issues above"
+            exit 1
+          fi
