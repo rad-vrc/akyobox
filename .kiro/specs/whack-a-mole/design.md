@@ -35,6 +35,7 @@ Reactの`useState`と`useEffect`フックを使用してゲーム状態を管理
 - `timeRemaining`: number (残り時間、秒単位)
 - `akyos`: Array<AkyoData> (画面に表示されているAkyoの配列)
 - `decoyImages`: string[] (カスタマイズ可能なはずれ画像のURL配列)
+- `highScore`: number (ローカル保存されたハイスコア)
 
 ### Data Flow
 
@@ -77,8 +78,9 @@ interface StartScreenProps {
 
 **UI仕様:**
 - ヒーローセクションでタイトルロゴと 1 行説明を表示
-- 「How to Play」カードを配置し、ターゲット画像とデコイ画像の違い、制限時間、操作方法（クリック/タップ）を箇条書きで案内
-- スタート/設定ボタンはモバイルでは縦積み、デスクトップでは横並びレイアウトを採用
+- 「How to Play」カードを配置し、ターゲット/デコイ画像のサムネイル、制限時間、操作方法（クリック/タップ）を図解
+- 2〜3 枚のミニチュートリアル（静止画やアニメ GIF）でターゲットを叩く流れを可視化
+- スタート/設定ボタンはモバイルでは縦積み、デスクトップでは横並びレイアウトを採用し、タップ領域 44px 以上を確保
 
 ### 3. GameScreen Component
 
@@ -427,6 +429,12 @@ const loadCustomImages = () => {
 - `aria-live="polite"` でスコアとタイマーを読み上げ、ターゲット/デコイを `aria-label` で説明
 - キーボードフォーカスインジケーターを標準化し、モーダル表示時は `Esc` で閉じる
 
+## Performance Optimizations
+
+- 画像アセットは可能な限り WebP 形式で管理し、CI でも WebP の存在をチェックする。必要に応じて png/jpg → webp 変換は Canvas API で `canvas.toDataURL(image/webp, 0.9)` を用いて実施。
+- React レンダリングの最適化：`AkyoItem`, `ScoreDisplay`, `TimerDisplay` など頻繁に更新されるコンポーネントは `React.memo` や `useCallback` で再レンダリングを最小化。
+- 多数のクリックイベントを受ける場合は Passive Event Listener (`{ passive: true }`) を使用し、state 更新は `requestAnimationFrame` でバッチ化して INP を抑える。
+- タイマー/インターバルは `useEffect` の cleanup で必ず clear し、不要な setTimeout を発生させない。
 ## Error Handling
 
 ### 画像読み込みエラー
@@ -557,6 +565,12 @@ const safeLocalStorageSet = (key: string, value: string) => {
 - 適切なARIAラベルの使用
 - 色覚異常者への配慮（色だけに依存しないデザイン）
 - スクリーンリーダー対応
+
+## Feedback & Engagement
+
+- 得点獲得/減点時にマイクロアニメーション（スコアバブル、Akyo の拡大縮小）と短いサウンドを再生。`muted` トグルでサウンドを無効化可能にする。
+- 対応ブラウザでは `navigator.vibrate` を利用してハプティックフィードバックを提供（ユーザーの設定が優先）。
+- GameOverScreen にハイスコアと直近プレイのスコア履歴を表示し、再挑戦や難易度選択へ誘導する。
 
 ## Future Enhancements
 
