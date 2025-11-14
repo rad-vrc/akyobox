@@ -1,9 +1,5 @@
-import { afterEach, beforeEach, vi } from "vitest";
-
-beforeEach(() => {
-  vi.restoreAllMocks();
-});
+import { afterEach, vi } from "vitest";
 
 afterEach(() => {
-  vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
