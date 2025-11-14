@@ -21,7 +21,7 @@
 Static files served directly:
 - Character images (akyo_devilyagi.png, akyo_humanoid.png, akyo_yagi.png)
 - Game assets (GameTitle.png, VRChat screenshot)
-- Vite logo (vite.svg)
+- Akyo logo (favicon.png / akyo_devilyagi.png)
 
 ## Code Conventions
 - Use `.tsx` extension for React components
