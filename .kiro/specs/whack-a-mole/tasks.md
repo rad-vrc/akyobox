@@ -72,8 +72,8 @@
   - ScoreDisplayコンポーネント（得点表示、ハイスコア表示）
   - TimerDisplayコンポーネント（残り時間表示）
   - GameBoardコンポーネント（Akyo表示エリア）
-  - テーマトークン（背景/サーフェス/アクセントカラー、角丸、影）を `:root` に定義し、GameScreen でも活用
-  - ブレークポイント（<600px / 600-1024px / >1024px）ごとに Score/Timer/Board の配置を調整
+  - テーマトークン（`--akyo-bg`, `--akyo-surface`, `--akyo-accent`, `--akyo-radius`, `--akyo-shadow` など）を `:root` に定義し、GameScreen でも活用
+  - ブレークポイント（モバイル: `@media (max-width: 599px)`, タブレット: `@media (min-width: 600px) and (max-width: 1023px)`, デスクトップ: `@media (min-width: 1024px)`）ごとに Score/Timer/Board の配置を調整
   - _Requirements: 1.3, 4.1, 4.2_
 
 - [ ] 6. AkyoItemコンポーネントの実装
@@ -129,7 +129,7 @@
   - 画像ファイルのバリデーション（形式: png/jpeg/webp/gif、サイズ: 5MB以下）
   - アップロードされた png/jpg を Canvas API で webp に変換し、localStorage には webp を保存
   - プレビュー機能（アップロード前に画像を確認）
-  - モーダル表示 & フォーカストラップ実装（背景スクロールロック、`Esc` で閉じる）
+  - モーダル表示 & フォーカストラップ実装（`focus-trap` や `react-focus-lock` などのライブラリ利用を推奨。背景スクロールロック、`Esc` で閉じる）
   - 戻るボタンのUI
   - 設定画面のスタイリング
   - _Requirements: 6.1, 6.2, 6.3_
@@ -149,8 +149,8 @@
 
 - [ ] 12. レスポンシブデザインとスタイリングの実装
   - グローバルスタイルの設定（App.css）
-  - モバイル対応のメディアクエリ、3ブレークポイント（<600 / 600-1024 / >1024）のレイアウト調整
-  - テーマトークン（背景/サーフェス/アクセント/影/角丸）を `:root`に定義し、ライト/ダーク対応。アセットは WebP 優先で読み込み。
+  - モバイル対応のメディアクエリ、3ブレークポイント（モバイル: `@media (max-width: 599px)`, タブレット: `@media (min-width: 600px) and (max-width: 1023px)`, デスクトップ: `@media (min-width: 1024px)`）のレイアウト調整
+  - テーマトークン（`--akyo-bg`, `--akyo-surface`, `--akyo-accent`, `--akyo-radius`, `--akyo-shadow` など）を `:root`に定義し、ライト/ダーク対応。アセットは WebP 優先で読み込み。
   - `prefers-reduced-motion` / `prefers-color-scheme` メディアクエリでアクセシビリティに配慮
   - フルスクリーンレイアウト、アニメーション（pop-in, hit, reduced motionオプション）
   - 各コンポーネントのCSSファイル作成

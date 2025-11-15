@@ -355,22 +355,33 @@ const loadCustomImages = () => {
 - GameBoardは相対配置（`position: relative`）
 - AkyoItemは絶対配置（`position: absolute`）
 - テーマトークンを用意：`--akyo-bg`, `--akyo-surface`, `--akyo-accent`, `--akyo-radius`, `--akyo-shadow` を `:root` に定義し、光/ダーク両対応
-- レスポンシブブレークポイント（`<600px`, `600-1024px`, `>1024px`）でレイアウトを最適化し、ボタンや情報カードの配置を変える
+- レスポンシブブレークポイントは以下の3区分とし、レイアウトやボタン配置を調整する
+  - モバイル: `@media (max-width: 599px)`
+  - タブレット: `@media (min-width: 600px) and (max-width: 1023px)`
+  - デスクトップ: `@media (min-width: 1024px)`
 - 設定画面はモーダル表示とし、背景スクロールをロック＆フォーカストラップを適用する
 
 ### レスポンシブデザイン
 
 ```css
-/* モバイル対応 */
-@media (max-width: 768px) {
+/* モバイル */
+@media (max-width: 599px) {
   .akyo-item {
     width: 80px;
     height: 80px;
   }
 }
 
+/* タブレット */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .akyo-item {
+    width: 96px;
+    height: 96px;
+  }
+}
+
 /* デスクトップ */
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   .akyo-item {
     width: 120px;
     height: 120px;
@@ -416,9 +427,8 @@ const loadCustomImages = () => {
 ```css
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition-duration: 0ms !important;
   }
 }
 ```
@@ -428,6 +438,28 @@ const loadCustomImages = () => {
 - `prefers-color-scheme` に応じてテーマトークンを切り替え、コントラスト比 4.5:1 以上を確保
 - `aria-live="polite"` でスコアとタイマーを読み上げ、ターゲット/デコイを `aria-label` で説明
 - キーボードフォーカスインジケーターを標準化し、モーダル表示時は `Esc` で閉じる
+
+#### カラーパレットとコントラスト比（例）
+
+ライトテーマ（例）:
+
+- 背景: `--akyo-bg: #f9fafb`
+- サーフェス: `--akyo-surface: #e5e7eb`
+- アクセント: `--akyo-accent: #4f46e5`
+- テキスト: `#111827`
+- 主な組み合わせのコントラスト比（実測値）:
+  - テキスト（`#111827`） vs 背景（`#f9fafb`） ≒ **16.98:1**
+  - アクセント（`#4f46e5`） vs 背景（`#f9fafb`） ≒ **6.02:1**
+
+ダークテーマ（例）:
+
+- 背景: `--akyo-bg: #0f172a`
+- サーフェス: `--akyo-surface: #111827`
+- アクセント: `--akyo-accent: #22c55e`
+- テキスト: `#f9fafb`
+- 主な組み合わせのコントラスト比（実測値）:
+  - テキスト（`#f9fafb`） vs 背景（`#0f172a`） ≒ **17.08:1**
+  - アクセント（`#22c55e`） vs 背景（`#0f172a`） ≒ **7.83:1**
 
 ## Performance Optimizations
 
