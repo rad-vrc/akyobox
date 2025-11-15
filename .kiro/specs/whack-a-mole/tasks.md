@@ -63,6 +63,7 @@
   - StartScreen.tsxを作成
   - スタートボタンと設定ボタンのUI
   - 「How to Play」カードに操作説明（ターゲット/デコイ画像例、制限時間、クリック/タップ方法）を記載
+  - 「How to Play」用のステップ画像（`howto_target.png`, `howto_decoy.png` など）を `assets/whack-a-mole/howto/` 配下に配置し、StartScreen から参照
   - ボタンクリックイベントハンドラー
   - スタート画面のスタイリング
   - _Requirements: 1.1, 7.2_
@@ -96,9 +97,10 @@
   - 最大表示数の制限（3個まで）
   - 自動削除タイマー（1.5秒後）
   - 位置の重複チェック（最小距離150px）
-  - `requestAnimationFrame` を用いてクリック処理をバッチ化し、格子状に state 更新をまとめる
+  - `requestAnimationFrame` を用いてクリックイベントキューを 1 フレームごとに処理し、同一フレーム内の複数クリックをまとめて Akyo 配列とスコア更新の state/dispatch に反映する（必要に応じて `useTransition` などを併用して再レンダリングを滑らかにする）
   - _Requirements: 2.1, 2.2, 2.5_
   - **チェックポイント:** Akyoが適切な間隔で生成され、重複せず、自動的に消えることを確認
+  - **チェックポイント（パフォーマンス）:** 複数のクリックイベント（クイックタップ）が1フレーム内に集約され、Akyo配列とスコア更新の state 更新が `requestAnimationFrame` コールバック内で一度にディスパッチされることを確認
   - **単体テスト（このタスク完了時に実施）:** 位置生成関数が重複を避け、範囲内の値を返すことを確認
 
 - [ ] 8. 得点計算とタイマーロジックの実装
@@ -155,6 +157,7 @@
   - フルスクリーンレイアウト、アニメーション（pop-in, hit, reduced motionオプション）
   - 各コンポーネントのCSSファイル作成
   - _Requirements: 全体的なUI/UX_
+  - **チェックポイント:** Task 5 で定義したテーマトークン（`--akyo-bg`, `--akyo-surface` など）を再利用し、`@media (prefers-color-scheme: dark)` 内でこれらの値を上書きして light/dark 対応が実装されていること、また `prefers-reduced-motion` 対応とブレークポイント対応が互いに独立して実装されていることを確認
 
 - [ ] 13. Vercelデプロイ設定
   - vercel.jsonファイルの作成（SPAルーティング設定）
