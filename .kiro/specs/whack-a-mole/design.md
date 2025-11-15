@@ -35,6 +35,7 @@ Reactの`useState`と`useEffect`フックを使用してゲーム状態を管理
 - `timeRemaining`: number (残り時間、秒単位)
 - `akyos`: Array<AkyoData> (画面に表示されているAkyoの配列)
 - `decoyImages`: string[] (カスタマイズ可能なはずれ画像のURL配列)
+- `highScore`: number (ローカル保存されたハイスコア)
 
 ### Data Flow
 
@@ -74,6 +75,12 @@ interface StartScreenProps {
   onSettings: () => void;
 }
 ```
+
+**UI仕様:**
+- ヒーローセクションでタイトルロゴと 1 行説明を表示
+- 「How to Play」カードを配置し、ターゲット/デコイ画像のサムネイル、制限時間、操作方法（クリック/タップ）を図解
+- 2〜3 枚のミニチュートリアル（静止画やアニメ GIF）でターゲットを叩く流れを可視化
+- スタート/設定ボタンはモバイルでは縦積み、デスクトップでは横並びレイアウトを採用し、タップ領域 44px 以上を確保
 
 ### 3. GameScreen Component
 
@@ -347,20 +354,34 @@ const loadCustomImages = () => {
 - フルスクリーンレイアウト（`width: 100vw`, `height: 100vh`）
 - GameBoardは相対配置（`position: relative`）
 - AkyoItemは絶対配置（`position: absolute`）
+- テーマトークンを用意：`--akyo-bg`, `--akyo-surface`, `--akyo-accent`, `--akyo-radius`, `--akyo-shadow` を `:root` に定義し、光/ダーク両対応
+- レスポンシブブレークポイントは以下の3区分とし、レイアウトやボタン配置を調整する
+  - モバイル: `@media (max-width: 599px)`
+  - タブレット: `@media (min-width: 600px) and (max-width: 1023px)`
+  - デスクトップ: `@media (min-width: 1024px)`
+- 設定画面はモーダル表示とし、背景スクロールをロック＆フォーカストラップを適用する
 
 ### レスポンシブデザイン
 
 ```css
-/* モバイル対応 */
-@media (max-width: 768px) {
+/* モバイル */
+@media (max-width: 599px) {
   .akyo-item {
     width: 80px;
     height: 80px;
   }
 }
 
+/* タブレット */
+@media (min-width: 600px) and (max-width: 1023px) {
+  .akyo-item {
+    width: 96px;
+    height: 96px;
+  }
+}
+
 /* デスクトップ */
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   .akyo-item {
     width: 120px;
     height: 120px;
@@ -401,6 +422,51 @@ const loadCustomImages = () => {
 }
 ```
 
+### Reduced Motion 対応
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+}
+```
+
+### UI アクセシビリティ
+
+- `prefers-color-scheme` に応じてテーマトークンを切り替え、コントラスト比 4.5:1 以上を確保
+- `aria-live="polite"` でスコアとタイマーを読み上げ、ターゲット/デコイを `aria-label` で説明
+- キーボードフォーカスインジケーターを標準化し、モーダル表示時は `Esc` で閉じる
+
+#### カラーパレットとコントラスト比（例）
+
+ライトテーマ（例）:
+
+- 背景: `--akyo-bg: #f9fafb`
+- サーフェス: `--akyo-surface: #e5e7eb`
+- アクセント: `--akyo-accent: #4f46e5`
+- テキスト: `#111827`
+- 主な組み合わせのコントラスト比（実測値）:
+  - テキスト（`#111827`） vs 背景（`#f9fafb`） ≒ **16.98:1**
+  - アクセント（`#4f46e5`） vs 背景（`#f9fafb`） ≒ **6.02:1**
+
+ダークテーマ（例）:
+
+- 背景: `--akyo-bg: #0f172a`
+- サーフェス: `--akyo-surface: #111827`
+- アクセント: `--akyo-accent: #22c55e`
+- テキスト: `#f9fafb`
+- 主な組み合わせのコントラスト比（実測値）:
+  - テキスト（`#f9fafb`） vs 背景（`#0f172a`） ≒ **17.08:1**
+  - アクセント（`#22c55e`） vs 背景（`#0f172a`） ≒ **7.83:1**
+
+## Performance Optimizations
+
+- 画像アセットは可能な限り WebP 形式で管理し、CI でも WebP の存在をチェックする。必要に応じて png/jpg → webp 変換は Canvas API で `canvas.toDataURL(image/webp, 0.9)` を用いて実施。
+- React レンダリングの最適化：`AkyoItem`, `ScoreDisplay`, `TimerDisplay` など頻繁に更新されるコンポーネントは `React.memo` や `useCallback` で再レンダリングを最小化。
+- 多数のクリックイベントを受ける場合は Passive Event Listener (`{ passive: true }`) を使用し、state 更新は `requestAnimationFrame` でバッチ化して INP を抑える。
+- タイマー/インターバルは `useEffect` の cleanup で必ず clear し、不要な setTimeout を発生させない。
 ## Error Handling
 
 ### 画像読み込みエラー
@@ -531,6 +597,12 @@ const safeLocalStorageSet = (key: string, value: string) => {
 - 適切なARIAラベルの使用
 - 色覚異常者への配慮（色だけに依存しないデザイン）
 - スクリーンリーダー対応
+
+## Feedback & Engagement
+
+- 得点獲得/減点時にマイクロアニメーション（スコアバブル、Akyo の拡大縮小）と短いサウンドを再生。`muted` トグルでサウンドを無効化可能にする。
+- 対応ブラウザでは `navigator.vibrate` を利用してハプティックフィードバックを提供（ユーザーの設定が優先）。
+- GameOverScreen にハイスコアと直近プレイのスコア履歴を表示し、再挑戦や難易度選択へ誘導する。
 
 ## Future Enhancements
 
