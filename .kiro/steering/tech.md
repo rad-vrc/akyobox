@@ -1,19 +1,30 @@
 # Technology Stack
 
-## Core Technologies
-- **Framework**: React 18.3.1
-- **Language**: TypeScript 5.5.3
-- **Build Tool**: Vite 5.4.1
-- **Module System**: ES Modules
+## Core Framework
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Runtime**: Node.js (v20.9+ required)
 
-## Development Tools
-- **Linting**: ESLint 9.9.0 with TypeScript ESLint
-- **Type Checking**: TypeScript with strict mode enabled
-- **React Plugins**: 
-  - eslint-plugin-react-hooks
-  - eslint-plugin-react-refresh
-  - @vitejs/plugin-react
+## Build & Bundling
+- **Bundler**: Turbopack (Next.js default)
+- **Linting**: ESLint (v9) + eslint-config-next
+- **Type Checking**: TypeScript (tsc)
 
+## Deployment
+- **Platform**: Vercel
+- **Configuration**: `vercel.json` (Custom headers for Brotli/.br support)
+
+## Integration
+- **Unity WebGL**: Hosted in `public/games/`, embedded via `iframe`.
+- **Compression**: Custom server (`server.js`) for local dev, Vercel config for production to handle `.br` files.
+
+## State Management
+- **Local State**: React `useState`, `useReducer`
+- **Global State**: (Not yet implemented, consider Context API or Zustand if needed)
+
+## Styling
+- **Method**: CSS Modules or Inline Styles (currently standard CSS)
+- **Design System**: (Pending)
 ## Common Commands
 
 ### Development

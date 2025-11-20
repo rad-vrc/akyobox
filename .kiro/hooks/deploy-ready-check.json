@@ -4,7 +4,7 @@
     "trigger": {
         "type": "manual"
     },
-    "prompt": "デプロイ前の総合チェックを実行してください:\n\n## 1. ビルドチェック\n- `npm run build` を実行してプロダクションビルドが成功するか確認\n- ビルドエラーがあれば詳細を報告\n\n## 2. アセット確認\n- `public/` ディレクトリに以下のファイルが存在するか確認:\n  - GameTitle.png\n  - akyo_devilyagi.png\n  - akyo_humanoid.png\n  - akyo_yagi.png\n- 不足しているファイルがあればリスト表示\n\n## 3. コード品質チェック\n- `npm run lint` を実行してリントエラーがないか確認\n- TypeScript型エラーがないか確認（tsc --noEmit）\n\n## 4. デバッグ設定確認\n- コード内に `console.log` や開発用デバッグコードが残っていないか検索\n- `VITE_DEBUG` 環境変数が本番では無効化される設定になっているか確認\n\n## 5. 結果サマリー\n以下の形式でチェックリストを表示:\n```\n✓ ビルド成功\n✓ アセット完備\n✓ リント/型チェック通過\n✓ デバッグコード除去\n\nデプロイ準備完了！\n```\n\nまたは問題があれば:\n```\n✗ ビルドエラー: [詳細]\n✗ 不足アセット: [リスト]\n...\n\n修正が必要です。\n```",
+    "prompt": "デプロイ前の総合チェックを実行してください:\n\n## 1. ビルドチェック\n- `npm run build` を実行してNext.jsのプロダクションビルドが成功するか確認\n- ビルドエラーがあれば詳細を報告\n\n## 2. Unityアセット確認\n- `public/games/whack-a-devilyagiakyo/` ディレクトリに以下のファイルが存在するか確認:\n  - index.html\n  - Build/whack-a-devilyagiakyo.loader.js\n  - Build/whack-a-devilyagiakyo.framework.js.br\n  - Build/whack-a-devilyagiakyo.data.br\n  - Build/whack-a-devilyagiakyo.wasm.br\n- 不足しているファイルがあればリスト表示\n\n## 3. デプロイ設定確認\n- `vercel.json` が存在し、`.br` ファイル用のヘッダー設定が含まれているか確認\n- `app/icon.png` が存在するか確認\n\n## 4. コード品質チェック\n- `npm run lint` を実行してリントエラーがないか確認\n- TypeScript型エラーがないか確認（tsc --noEmit）\n\n## 5. 結果サマリー\n以下の形式でチェックリストを表示:\n```\n✓ Next.jsビルド成功\n✓ Unityアセット完備\n✓ Vercel設定確認\n✓ リント/型チェック通過\n\nデプロイ準備完了！\n```\n\nまたは問題があれば:\n```\n✗ ビルドエラー: [詳細]\n✗ 不足ファイル: [リスト]\n...\n\n修正が必要です。\n```",
     "autoApprove": false,
     "enabled": true
 }

@@ -1,27 +1,29 @@
 # Project Structure
 
-## Root Directory
-- `index.html` - Entry HTML file with root div and module script
-- `package.json` - Dependencies and npm scripts
-- `vite.config.ts` - Vite configuration with React plugin
-- `eslint.config.js` - ESLint configuration (flat config format)
-- `tsconfig.json` - Root TypeScript config with project references
-- `tsconfig.app.json` - App-specific TypeScript settings
-- `tsconfig.node.json` - Node-specific TypeScript settings
+## Directory Layout
 
-## Source Code (`src/`)
-- `main.tsx` - Application entry point, renders App in StrictMode
-- `App.tsx` - Main application component
-- `App.css` - Component-specific styles
-- `index.css` - Global styles
-- `vite-env.d.ts` - Vite type definitions
-- `assets/` - Static assets (images, SVGs)
+```
+/
+├── .kiro/                  # Project documentation & hooks
+├── app/                    # Next.js App Router directories
+│   ├── layout.tsx          # Root layout
+│   ├── page.tsx            # Homepage (Game Portal)
+│   └── icon.png            # App Icon (Favicon)
+├── public/                 # Static assets
+│   └── games/              # Unity WebGL builds
+│       └── whack-a-devilyagiakyo/
+├── .gitignore
+├── next.config.mjs         # Next.js configuration
+├── package.json
+├── server.js               # Custom server for local dev (.br support)
+├── tsconfig.json
+└── vercel.json             # Vercel deployment config (.br support)
+```
 
-## Public Assets (`public/`)
-Static files served directly:
-- Character images (akyo_devilyagi.png, akyo_humanoid.png, akyo_yagi.png)
-- Game assets (GameTitle.png, VRChat screenshot)
-- Akyo logo (favicon.png / akyo_devilyagi.png)
+## Key Files
+- `app/page.tsx`: Main entry point for the portal, currently embeds the Unity game.
+- `server.js`: Custom Node.js server to handle Content-Encoding headers for Unity's Brotli compressed files during local development.
+- `vercel.json`: Configuration to ensure Vercel serves `.br` files with correct headers.
 
 ## Code Conventions
 - Use `.tsx` extension for React components
