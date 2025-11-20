@@ -6,13 +6,13 @@ export const metadata: Metadata = {
     default: 'Akyobox',
     template: '%s | Akyobox',
   },
-  description: 'Akyoboxは、AkyoをテーマにしたUnity WebGLゲームのポータルサイトです。「激烈！デビルヤギAkyo叩き」などのゲームをブラウザで直接プレイできます。',
-  keywords: ['Akyo', 'Unity', 'WebGL', 'Game', 'モグラ叩き', 'Next.js', 'React'],
+  description: 'Akyoboxは、AkyoをテーマにしたUnity WebGLゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのゲームをブラウザで直接プレイできるぞ！',
+  keywords: ['Akyo', 'Unity', 'WebGL', 'Game', 'ミニゲーム', 'Next.js', 'React'],
   authors: [{ name: 'らど' }],
   creator: 'らど',
   openGraph: {
     title: 'Akyobox',
-    description: 'AkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
+    description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
     url: 'https://akyobox.vercel.app',
     siteName: 'Akyobox',
     locale: 'ja_JP',
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Akyobox',
-    description: 'AkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
+    description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
     creator: '@rad_vrc',
     images: ['/opengraph-image'], // 明示的に指定（Next.jsが自動生成するパス）
   },
