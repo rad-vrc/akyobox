@@ -58,9 +58,83 @@
         height: 100%;
         display: block;
       }
+
+      /* ランキング/名前入力オーバーレイ */
+      #overlay-ui {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        font-family: "JetBrains Mono", monospace;
+        color: #f5f5f5;
+        z-index: 5;
+      }
+
+      #name-box {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        pointer-events: auto;
+        background: rgba(0, 0, 0, 0.45);
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.2);
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      #name-box input {
+        width: 140px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #f5f5f5;
+        padding: 4px 6px;
+        border-radius: 4px;
+      }
+
+      #ranking {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        pointer-events: auto;
+        background: rgba(0, 0, 0, 0.45);
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.2);
+        min-width: 200px;
+      }
+
+      #ranking h4 {
+        margin: 0 0 6px 0;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+
+      #ranking ol {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 13px;
+      }
+
+      #ranking li {
+        margin: 2px 0;
+        color: #e8e8e8;
+      }
     </style>
   </head>
   <body>
+    <div id="overlay-ui">
+      <div id="name-box">
+        <label for="playerName" style="font-size:12px;">NAME</label>
+        <input id="playerName" maxlength="16" placeholder="Anonymous" />
+      </div>
+      <div id="ranking">
+        <h4>TOP 5</h4>
+        <ol id="rankingList">
+          <li>Loading...</li>
+        </ol>
+      </div>
+    </div>
     <div id="unity-container" class="unity-desktop">
       <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
       <video id="bgVideo" preload="auto" playsinline muted autoplay loop crossorigin="anonymous">
@@ -92,6 +166,76 @@
       const VIDEO_PATH_GAME = "game-bg.mp4";
       const VIDEO_PATH_ENDING = "ending.mp4";
       let inputLocked = true;
+      const HIGHSCORE_ENDPOINT = "/api/highscores";
+
+      // ==========================================
+      // Highscore & Name handling
+      // ==========================================
+      function loadPlayerName() {
+        const input = document.getElementById("playerName");
+        if (!input) return "Anonymous";
+        const saved = localStorage.getItem("playerName") || "Anonymous";
+        input.value = saved;
+        return saved;
+      }
+
+      function getPlayerName() {
+        const input = document.getElementById("playerName");
+        if (!input) return "Anonymous";
+        const val = (input.value || "Anonymous").trim();
+        return val === "" ? "Anonymous" : val.slice(0, 16);
+      }
+
+      function attachNameInput() {
+        const input = document.getElementById("playerName");
+        if (!input) return;
+        loadPlayerName();
+        input.addEventListener("change", () => {
+          localStorage.setItem("playerName", getPlayerName());
+        });
+      }
+
+      async function fetchHighscores() {
+        try {
+          const res = await fetch(HIGHSCORE_ENDPOINT, { cache: "no-store" });
+          if (!res.ok) return;
+          const list = await res.json();
+          renderHighscores(list);
+        } catch (e) {
+          console.log("fetch highscores error", e);
+        }
+      }
+
+      function renderHighscores(list) {
+        const ol = document.getElementById("rankingList");
+        if (!ol) return;
+        ol.innerHTML = "";
+        if (!Array.isArray(list) || list.length === 0) {
+          ol.innerHTML = "<li>No scores yet</li>";
+          return;
+        }
+        list.slice(0, 5).forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = `${item.name ?? "Anonymous"} - ${item.score ?? 0}`;
+          ol.appendChild(li);
+        });
+      }
+
+      async function submitScore(score) {
+        const name = getPlayerName();
+        try {
+          await fetch(HIGHSCORE_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, score }),
+          });
+          fetchHighscores();
+        } catch (e) {
+          console.log("submit score error", e);
+        }
+      }
+
+      window.SubmitScore = submitScore;
 
       function getVideoElement() {
         return document.getElementById("bgVideo");
@@ -262,6 +406,8 @@
       };
 
       document.body.appendChild(script);
+      attachNameInput();
+      fetchHighscores();
 
     </script>
   </body>
