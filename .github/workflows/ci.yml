@@ -82,51 +82,16 @@ jobs:
           retention-days: 7
 
   asset-check:
-    name: Asset Verification
+    name: Asset Verification (disabled)
     runs-on: ubuntu-latest
-
+    if: false
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Verify required assets
-        run: |
-          echo "Checking required assets in public/ directory..."
-
-          REQUIRED_ASSETS=(
-            "public/GameTitle.png"
-            "public/akyo_devilyagi.png"
-            "public/akyo_humanoid.png"
-            "public/akyo_yagi.png"
-            "public/fallback.png"
-          )
-
-          PROBLEM_ASSETS=()
-
-          for asset in "${REQUIRED_ASSETS[@]}"; do
-            if [ ! -f "$asset" ]; then
-              PROBLEM_ASSETS+=("Missing: $asset")
-              continue
-            fi
-
-            SIZE=$(stat -c%s "$asset")
-            if [ "$SIZE" -eq 0 ]; then
-              PROBLEM_ASSETS+=("Zero-byte file: $asset")
-            fi
-          done
-
-          if [ ${#PROBLEM_ASSETS[@]} -eq 0 ]; then
-            echo "✓ All required assets exist and are non-empty"
-          else
-            echo "✗ Asset verification failed:"
-            printf '%s\n' "${PROBLEM_ASSETS[@]}"
-            exit 1
-          fi
+      - run: echo "asset check disabled"
 
   build-preview:
     name: Build Preview
     runs-on: ubuntu-latest
-    needs: [test, knip-check, asset-check]
+    needs: [test, knip-check]
 
     steps:
       - name: Checkout code

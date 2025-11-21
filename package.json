@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "node server.js",
-    "prebuild": "node scripts/fetch-ending.js",
     "build": "next build",
     "start": "node server.js",
     "lint": "next lint"
