@@ -12,18 +12,31 @@ export default {
                 return new Response(`Files in bucket:\n${keys}`);
             }
 
-            const object = await env.R2_BUCKET.get(key);
+            const range = request.headers.get("range");
+            const options = range ? { rangeHeader: range } : undefined;
+            const object = await env.R2_BUCKET.get(key, options);
+
             if (!object) return new Response("Object not found", { status: 404 });
 
             const headers = new Headers();
             object.writeHttpMetadata(headers);
             headers.set("etag", object.httpEtag);
+            headers.set("Access-Control-Allow-Origin", "*");
 
             if (key.endsWith(".mp4")) {
                 headers.set("Content-Type", "video/mp4");
             }
 
-            headers.set("Access-Control-Allow-Origin", "*");
+            // Handle Range responses
+            if (range && object.range) {
+                headers.set("content-range", `bytes ${object.range.offset}-${object.range.offset + object.range.length - 1}/${object.size}`);
+                headers.set("content-length", object.range.length);
+                return new Response(object.body, {
+                    headers,
+                    status: 206
+                });
+            }
+
             return new Response(object.body, { headers });
         }
 
