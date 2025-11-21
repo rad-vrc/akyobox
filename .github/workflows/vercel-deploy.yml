@@ -28,8 +28,6 @@ jobs:
           npm run lint
           npx tsc --noEmit
           npm run build
-        env:
-          VITE_DEBUG: false
 
   deploy:
     name: Deploy to Vercel

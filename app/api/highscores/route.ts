@@ -10,6 +10,7 @@ type Entry = {
 
 const KEY = "highscores";
 const LIMIT = 10;
+const USER_HASH = "highscores-by-user";
 
 function userKey(name: string) {
   return name.toLowerCase();
@@ -32,16 +33,19 @@ function sanitizeScore(raw: unknown): number | null {
 
 export async function GET() {
   try {
-    const raw = (await kv.zrange(KEY, -LIMIT, -1, { rev: true })) as string[];
-    const parsed = raw
-      .map((r) => {
+    const members = (await kv.zrange(KEY, -LIMIT, -1, { rev: true })) as string[];
+    const entries = await Promise.all(
+      members.map(async (member) => {
         try {
-          return JSON.parse(r) as Entry;
+          const raw = await kv.hget<string>(USER_HASH, member);
+          if (!raw) return null;
+          return JSON.parse(raw) as Entry;
         } catch {
           return null;
         }
       })
-      .filter((e): e is Entry => !!e);
+    );
+    const parsed = entries.filter((e): e is Entry => !!e);
 
     return NextResponse.json(parsed);
   } catch (err) {
@@ -60,7 +64,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
-    const existingRaw = await kv.hget<string>("highscores-by-user", userKey(name));
+    const existingRaw = await kv.hget<string>(USER_HASH, userKey(name));
     let existing: Entry | null = null;
     if (existingRaw) {
       try {
@@ -76,9 +80,10 @@ export async function POST(req: NextRequest) {
 
     const entry: Entry = { name, score, at: Date.now() };
     // ユーザー別に保存
-    await kv.hset("highscores-by-user", { [userKey(name)]: JSON.stringify(entry) });
-    // ソートセットにも登録
-    await kv.zadd(KEY, { score: entry.score, member: JSON.stringify(entry) });
+    const key = userKey(name);
+    await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
+    // ソートセットにはユーザーキーのみをメンバーとして登録（重複を防ぐ）
+    await kv.zadd(KEY, { score: entry.score, member: key });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
