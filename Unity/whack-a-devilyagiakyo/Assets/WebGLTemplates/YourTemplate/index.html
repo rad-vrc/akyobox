@@ -6,6 +6,10 @@
     <title>Unity Web Player | whack-a-devilyagiakyo</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <!-- 先読みで動画の立ち上がりを速くする -->
+    <link rel="preload" as="video" href="title.mp4" type="video/mp4">
+    <link rel="preload" as="video" href="game-bg.mp4" type="video/mp4">
+    <link rel="preload" as="video" href="ending.mp4" type="video/mp4">
     <style>
       html, body {
         width: 100%;
@@ -59,7 +63,7 @@
   <body>
     <div id="unity-container" class="unity-desktop">
       <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
-      <video id="bgVideo" playsinline muted autoplay loop crossorigin="anonymous">
+      <video id="bgVideo" preload="auto" playsinline muted autoplay loop crossorigin="anonymous">
         <source src="title.mp4" type="video/mp4">
         Your browser does not support HTML5 video.
       </video>
@@ -87,6 +91,7 @@
       const VIDEO_PATH_TITLE = "title.mp4";
       const VIDEO_PATH_GAME = "game-bg.mp4";
       const VIDEO_PATH_ENDING = "ending.mp4";
+      let inputLocked = true;
 
       function getVideoElement() {
         return document.getElementById("bgVideo");
@@ -122,7 +127,7 @@
       // エンディング動画
       window.PlayEndingVideo = function() {
         console.log("JS: PlayEndingVideo called");
-        swapVideo(VIDEO_PATH_ENDING, true, "ending");
+        swapVideo(VIDEO_PATH_ENDING, false, "ending");
       };
 
       // 動画停止
@@ -130,6 +135,23 @@
         var video = getVideoElement();
         if (video) video.pause();
       };
+
+      // --------------------------------------------------
+      // 初回クリック吸収: タイトル再生中の誤タップでゲームが開始しないようにする
+      // --------------------------------------------------
+      function consumeFirstPointer(e) {
+        if (!inputLocked) return;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        const video = getVideoElement();
+        if (video) {
+          video.play().catch(() => {});
+        }
+        inputLocked = false;
+        window.removeEventListener("pointerdown", consumeFirstPointer, true);
+      }
+
+      window.addEventListener("pointerdown", consumeFirstPointer, true);
 
       var canvas = document.querySelector("#unity-canvas");
 
