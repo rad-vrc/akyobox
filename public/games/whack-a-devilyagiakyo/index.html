@@ -101,13 +101,20 @@
         const video = getVideoElement();
         if (!video) return;
         video.pause();
+        // ループ状態をリセット
+        video.loop = loop === true;
+        // エンディングは最後で止める
+        if (!loop) {
+          video.onended = () => video.pause();
+        } else {
+          video.onended = null;
+        }
         // 同じ動画を繰り返し要求しない
         if (video.getAttribute("data-current") !== tag) {
           video.src = src;
           video.setAttribute("data-current", tag);
           video.load();
         }
-        video.loop = loop;
         video.currentTime = 0;
         video.play().catch(e => console.log("Video play error:", e));
       }

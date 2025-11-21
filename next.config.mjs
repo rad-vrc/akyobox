@@ -22,6 +22,32 @@ const nextConfig = {
         headers: [
           { key: "Content-Type", value: "application/octet-stream" },
           { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
+        ],
+      },
+      // Unity Build フォルダを明示的にカバー（モバイル互換性のため念押し）
+      {
+        source: "/games/:path*/Build/:file*.wasm.br",
+        headers: [
+          { key: "Content-Type", value: "application/wasm" },
+          { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
+        ],
+      },
+      {
+        source: "/games/:path*/Build/:file*.js.br",
+        headers: [
+          { key: "Content-Type", value: "application/javascript" },
+          { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
+        ],
+      },
+      {
+        source: "/games/:path*/Build/:file*.data.br",
+        headers: [
+          { key: "Content-Type", value: "application/octet-stream" },
+          { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
         ],
       },
       // MP4 はキャッシュを強めにして起動を速くする

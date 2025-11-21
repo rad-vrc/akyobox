@@ -11,6 +11,10 @@
         {
           "key": "Content-Encoding",
           "value": "br"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
         }
       ]
     },
@@ -24,6 +28,10 @@
         {
           "key": "Content-Encoding",
           "value": "br"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
         }
       ]
     },
@@ -37,6 +45,10 @@
         {
           "key": "Content-Encoding",
           "value": "br"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
         }
       ]
     },
@@ -46,6 +58,10 @@
         {
           "key": "Content-Encoding",
           "value": "br"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
         }
       ]
     }
