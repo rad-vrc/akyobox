@@ -2,40 +2,26 @@
 const nextConfig = {
   async headers() {
     return [
+      // Allow any unity game under /games/... to serve .br with proper headers
       {
-        source: "/games/whack-a-devilyagiakyo/Build/:path*.br",
+        source: "/games/:path*/*.wasm.br",
         headers: [
-          {
-            key: "Content-Encoding",
-            value: "br",
-          },
+          { key: "Content-Type", value: "application/wasm" },
+          { key: "Content-Encoding", value: "br" },
         ],
       },
       {
-        source: "/games/whack-a-devilyagiakyo/Build/:path*.js.br",
+        source: "/games/:path*/*.js.br",
         headers: [
-          {
-            key: "Content-Type",
-            value: "application/javascript",
-          },
+          { key: "Content-Type", value: "application/javascript" },
+          { key: "Content-Encoding", value: "br" },
         ],
       },
       {
-        source: "/games/whack-a-devilyagiakyo/Build/:path*.wasm.br",
+        source: "/games/:path*/*.data.br",
         headers: [
-          {
-            key: "Content-Type",
-            value: "application/wasm",
-          },
-        ],
-      },
-      {
-        source: "/games/whack-a-devilyagiakyo/Build/:path*.data.br",
-        headers: [
-          {
-            key: "Content-Type",
-            value: "application/octet-stream",
-          },
+          { key: "Content-Type", value: "application/octet-stream" },
+          { key: "Content-Encoding", value: "br" },
         ],
       },
     ];
