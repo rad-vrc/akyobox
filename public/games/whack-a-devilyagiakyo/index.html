@@ -263,7 +263,7 @@
           const li = document.createElement("li");
           const dispName = item && item.name && String(item.name).trim() ? item.name : "Anonymous";
           li.textContent = `${dispName} - ${item.score ?? 0}`;
-          if (item.name === myName) {
+          if (item && typeof item.name === "string" && item.name.toLowerCase() === myName.toLowerCase()) {
             li.classList.add("highlight");
           }
           ol.appendChild(li);
