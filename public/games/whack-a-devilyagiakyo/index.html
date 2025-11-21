@@ -8,13 +8,33 @@
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
   <link rel="stylesheet" href="TemplateData/style.css">
   <style>
-    /* 背景動画を「ゲーム領域の最奥」に限定して敷く */
-    #unity-container {
-      position: relative;
+    html, body {
       width: 100%;
       height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* 背景動画を「ゲーム領域の最奥」に限定して敷く */
+    #unity-container {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 1920px;
+      height: 1080px;
       background: transparent !important;
       overflow: hidden;
+    }
+
+    /* モバイルは全画面フィル */
+    #unity-container.unity-mobile {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform: none;
+      width: 100%;
+      height: 100%;
     }
 
     #bgVideo {
@@ -23,7 +43,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: 0;       /* 最奥 */
+      z-index: 0; /* 最奥 */
       pointer-events: none;
     }
 
@@ -31,6 +51,9 @@
       position: relative;
       z-index: 1;
       background: transparent !important;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
   </style>
 </head>
