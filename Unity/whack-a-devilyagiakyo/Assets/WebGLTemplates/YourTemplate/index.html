@@ -6,6 +6,13 @@
     <title>Unity Web Player | whack-a-devilyagiakyo</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      @font-face {
+        font-family: "Oshigo";
+        src: url("/fonts/oshigo.otf") format("opentype");
+        font-display: swap;
+      }
+    </style>
     <!-- 先読みで動画の立ち上がりを速くする -->
     <link rel="preload" as="video" href="title.mp4" type="video/mp4">
     <link rel="preload" as="video" href="game-bg.mp4" type="video/mp4">
@@ -64,7 +71,7 @@
         position: fixed;
         inset: 0;
         pointer-events: none;
-        font-family: "JetBrains Mono", monospace;
+        font-family: "Oshigo", "JetBrains Mono", monospace;
         color: #f5f5f5;
         z-index: 5;
       }
@@ -75,21 +82,34 @@
         right: 12px;
         pointer-events: auto;
         background: rgba(0, 0, 0, 0.45);
-        padding: 8px 10px;
-        border-radius: 6px;
+        padding: 24px 28px;
+        border-radius: 20px;
         border: 1px solid rgba(255,255,255,0.2);
         display: flex;
-        gap: 6px;
-        align-items: center;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      #name-box label {
+        width: 100%;
+        text-align: left;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        line-height: 1.1;
+        display: block;
+        text-transform: none;
       }
 
       #name-box input {
-        width: 140px;
+        width: 420px;
         background: rgba(255,255,255,0.08);
         border: 1px solid rgba(255,255,255,0.2);
         color: #f5f5f5;
-        padding: 4px 6px;
-        border-radius: 4px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-size: 30px;
       }
 
       #ranking {
@@ -98,38 +118,41 @@
         bottom: 12px;
         pointer-events: auto;
         background: rgba(0, 0, 0, 0.45);
-        padding: 10px 12px;
-        border-radius: 6px;
+        padding: 28px 32px;
+        border-radius: 20px;
         border: 1px solid rgba(255,255,255,0.2);
-        min-width: 200px;
+        min-width: 520px;
       }
 
       #ranking h4 {
         margin: 0 0 6px 0;
-        font-size: 14px;
+        font-size: 32px;
         letter-spacing: 0.5px;
       }
 
       #ranking ol {
         margin: 0;
         padding-left: 16px;
-        font-size: 13px;
+        font-size: 30px;
       }
 
-      #ranking li {
-        margin: 2px 0;
-        color: #e8e8e8;
+      #ranking li.highlight {
+        color: #ffd700;
+        font-weight: bold;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 4px;
+        padding: 0 4px;
       }
     </style>
   </head>
   <body>
     <div id="overlay-ui">
       <div id="name-box">
-        <label for="playerName" style="font-size:12px;">NAME</label>
+        <label for="playerName">Name</label>
         <input id="playerName" maxlength="16" placeholder="Anonymous" />
       </div>
       <div id="ranking">
-        <h4>TOP 5</h4>
+        <h4>TOP 10</h4>
         <ol id="rankingList">
           <li>Loading...</li>
         </ol>
@@ -190,6 +213,16 @@
         const input = document.getElementById("playerName");
         if (!input) return;
         loadPlayerName();
+        // 入力終了時に推しゴで確定表示
+        const applyFont = () => {
+          input.style.fontFamily = '"Oshigo", "JetBrains Mono", monospace';
+        };
+        applyFont();
+        input.addEventListener("blur", applyFont);
+        input.addEventListener("change", () => {
+          localStorage.setItem("playerName", getPlayerName());
+          applyFont();
+        });
         input.addEventListener("change", () => {
           localStorage.setItem("playerName", getPlayerName());
         });
@@ -198,36 +231,54 @@
       async function fetchHighscores() {
         try {
           const res = await fetch(HIGHSCORE_ENDPOINT, { cache: "no-store" });
-          if (!res.ok) return;
+          if (!res.ok) {
+            renderHighscores(null);
+            return;
+          }
           const list = await res.json();
           renderHighscores(list);
         } catch (e) {
           console.log("fetch highscores error", e);
+          renderHighscores(null);
         }
       }
 
       function renderHighscores(list) {
         const ol = document.getElementById("rankingList");
         if (!ol) return;
+        
+        // 現在のプレイヤー名
+        const myName = getPlayerName();
+        
+        // サンプル表示か実データか
+        let display = [];
+        if (Array.isArray(list) && list.length > 0) {
+          display = list;
+        }
+
         ol.innerHTML = "";
-        if (!Array.isArray(list) || list.length === 0) {
+        if (display.length === 0) {
           ol.innerHTML = "<li>No scores yet</li>";
           return;
         }
-        list.slice(0, 5).forEach((item) => {
+
+        display.slice(0, 10).forEach((item) => {
           const li = document.createElement("li");
           li.textContent = `${item.name ?? "Anonymous"} - ${item.score ?? 0}`;
+          if (item.name === myName) {
+            li.classList.add("highlight");
+          }
           ol.appendChild(li);
         });
       }
 
-      async function submitScore(score) {
+      async function submitScore(score, signature) {
         const name = getPlayerName();
         try {
           await fetch(HIGHSCORE_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, score }),
+            body: JSON.stringify({ name, score, signature }),
           });
           fetchHighscores();
         } catch (e) {

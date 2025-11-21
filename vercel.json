@@ -15,6 +15,10 @@
         {
           "key": "Vary",
           "value": "Accept-Encoding"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable, no-transform"
         }
       ]
     },
@@ -32,6 +36,10 @@
         {
           "key": "Vary",
           "value": "Accept-Encoding"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable, no-transform"
         }
       ]
     },
@@ -49,6 +57,10 @@
         {
           "key": "Vary",
           "value": "Accept-Encoding"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable, no-transform"
         }
       ]
     },
@@ -62,6 +74,10 @@
         {
           "key": "Vary",
           "value": "Accept-Encoding"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable, no-transform"
         }
       ]
     }

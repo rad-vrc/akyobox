@@ -8,6 +8,8 @@ const nextConfig = {
         headers: [
           { key: "Content-Type", value: "application/wasm" },
           { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       {
@@ -15,6 +17,8 @@ const nextConfig = {
         headers: [
           { key: "Content-Type", value: "application/javascript" },
           { key: "Content-Encoding", value: "br" },
+          { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       {
@@ -23,6 +27,7 @@ const nextConfig = {
           { key: "Content-Type", value: "application/octet-stream" },
           { key: "Content-Encoding", value: "br" },
           { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       // Unity Build フォルダを明示的にカバー（モバイル互換性のため念押し）
@@ -32,6 +37,7 @@ const nextConfig = {
           { key: "Content-Type", value: "application/wasm" },
           { key: "Content-Encoding", value: "br" },
           { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       {
@@ -40,6 +46,7 @@ const nextConfig = {
           { key: "Content-Type", value: "application/javascript" },
           { key: "Content-Encoding", value: "br" },
           { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       {
@@ -48,6 +55,7 @@ const nextConfig = {
           { key: "Content-Type", value: "application/octet-stream" },
           { key: "Content-Encoding", value: "br" },
           { key: "Vary", value: "Accept-Encoding" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable, no-transform" },
         ],
       },
       // MP4 はキャッシュを強めにして起動を速くする
