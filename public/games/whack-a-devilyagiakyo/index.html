@@ -226,9 +226,8 @@
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
 
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
+        // モバイル負荷軽減: デバイスピクセル比を1に固定して描画負荷を下げる
+        config.devicePixelRatio = 1;
 
 
       } else {
