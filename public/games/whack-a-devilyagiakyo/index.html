@@ -62,7 +62,7 @@
   <div id="unity-container" class="unity-desktop">
     <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
     <video id="bgVideo" playsinline muted autoplay loop crossorigin="anonymous">
-      <source src="Videos/Title.mp4" type="video/mp4">
+      <source src="title.mp4" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
 
@@ -86,8 +86,8 @@
     // ==========================================
 
     // 動画ファイルのパス（ビルド後のフォルダ構成に合わせて調整してください）
-    const VIDEO_PATH_TITLE = "Videos/Title.mp4";
-    const VIDEO_PATH_GAME = "Videos/Game.mp4";
+    const VIDEO_PATH_TITLE = "title.mp4";
+    const VIDEO_PATH_GAME = "game-bg.mp4";
     const VIDEO_PATH_ENDING = "ending.mp4";
 
     function getVideoElement() {
