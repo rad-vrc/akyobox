@@ -59,13 +59,13 @@
 </head>
 
 <body>
-  <!-- 背景動画要素 -->
-  <video id="bgVideo" playsinline muted autoplay loop crossorigin="anonymous">
-    <source src="Videos/Title.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
-
   <div id="unity-container" class="unity-desktop">
+    <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
+    <video id="bgVideo" playsinline muted autoplay loop crossorigin="anonymous">
+      <source src="Videos/Title.mp4" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+
     <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
     <div id="unity-loading-bar">
       <div id="unity-logo"></div>
