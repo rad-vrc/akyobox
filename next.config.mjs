@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       // Allow any unity game under /games/... to serve .br with proper headers
       {
-        source: "/games/:path*.wasm.br",
+        source: "/games/:path*\\.wasm\\.br",
         headers: [
           { key: "Content-Type", value: "application/wasm" },
           { key: "Content-Encoding", value: "br" },
@@ -13,7 +13,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/games/:path*.js.br",
+        source: "/games/:path*\\.js\\.br",
         headers: [
           { key: "Content-Type", value: "application/javascript" },
           { key: "Content-Encoding", value: "br" },
@@ -22,7 +22,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/games/:path*.data.br",
+        source: "/games/:path*\\.data\\.br",
         headers: [
           { key: "Content-Type", value: "application/octet-stream" },
           { key: "Content-Encoding", value: "br" },
