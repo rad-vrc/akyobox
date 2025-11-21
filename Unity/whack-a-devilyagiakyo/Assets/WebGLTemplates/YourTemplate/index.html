@@ -261,7 +261,8 @@
 
         display.slice(0, 10).forEach((item) => {
           const li = document.createElement("li");
-          li.textContent = `${item.name ?? "Anonymous"} - ${item.score ?? 0}`;
+          const dispName = item && item.name && String(item.name).trim() ? item.name : "Anonymous";
+          li.textContent = `${dispName} - ${item.score ?? 0}`;
           if (item.name === myName) {
             li.classList.add("highlight");
           }
