@@ -293,23 +293,43 @@
       function swapVideo(src, loop, tag) {
         const video = getVideoElement();
         if (!video) return;
-        video.pause();
-        // ループ状態をリセット
+        const isNew = video.getAttribute("data-current") !== tag;
+
+        // ループ設定と onended は毎回同期する
         video.loop = loop === true;
-        // エンディングは最後で止める
         if (!loop) {
-          video.onended = () => video.pause();
+          video.onended = () => {
+            video.pause();
+            // 1回で止める
+            video.onended = null;
+          };
         } else {
           video.onended = null;
         }
-        // 同じ動画を繰り返し要求しない
-        if (video.getAttribute("data-current") !== tag) {
-          video.src = src;
-          video.setAttribute("data-current", tag);
-          video.load();
+
+        // ソースが同じなら再ロードしない（意図しない巻き戻し防止）
+        if (!isNew) {
+          if (video.paused) {
+            video.play().catch((e) => console.log("Video play error:", e));
+          }
+          return;
         }
-        video.currentTime = 0;
-        video.play().catch(e => console.log("Video play error:", e));
+
+        video.pause();
+        video.setAttribute("data-current", tag);
+        video.src = src;
+        video.load(); // 非同期
+
+        const startPlayback = () => {
+          video.currentTime = 0;
+          video.play().catch((e) => console.log("Video play error:", e));
+        };
+
+        // canplay で再生（load は非同期のため）
+        video.addEventListener("canplay", function handleCanPlay() {
+          video.removeEventListener("canplay", handleCanPlay);
+          startPlayback();
+        });
       }
 
       // タイトル動画（ループ）
