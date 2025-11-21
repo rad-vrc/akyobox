@@ -23,6 +23,7 @@ export default {
                 headers.set("Content-Type", "video/mp4");
             }
 
+            headers.set("Access-Control-Allow-Origin", "*");
             return new Response(object.body, { headers });
         }
 
