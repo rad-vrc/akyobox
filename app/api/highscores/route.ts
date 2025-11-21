@@ -29,7 +29,7 @@ function sanitizeScore(raw: unknown): number | null {
 
 export async function GET() {
   try {
-    const raw = await kv.zrange<string>(KEY, -LIMIT, -1, { rev: true });
+    const raw = (await kv.zrange(KEY, -LIMIT, -1, { rev: true })) as string[];
     const parsed = raw
       .map((r) => {
         try {
