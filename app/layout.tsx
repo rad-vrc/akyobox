@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: 'Akyobox',
     description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
     creator: '@rad_vrc',
-    images: ['/opengraph-image'], // 明示的に指定（Next.jsが自動生成するパス）
+    images: ['/opengraph-image'],
   },
   icons: {
     icon: '/icon.png',
