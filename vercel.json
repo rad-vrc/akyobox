@@ -1,4 +1,5 @@
 {
+  "outputDirectory": ".next",
   "headers": [
     {
       "source": "/games/whack-a-devilyagiakyo/Build/(.*).data.br",
