@@ -8,25 +8,28 @@
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
   <link rel="stylesheet" href="TemplateData/style.css">
   <style>
-    /* 背景動画用のスタイル */
-    #bgVideo {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      min-width: 100%;
-      min-height: 100%;
-      z-index: -1;
-      /* キャンバスの後ろに配置 */
-      object-fit: cover;
-      /* アスペクト比を維持して画面を埋める */
+    /* 背景動画を「ゲーム領域の最奥」に限定して敷く */
+    #unity-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: transparent !important;
+      overflow: hidden;
     }
 
-    /* Unityコンテナの背景を透明にして動画が見えるようにする */
-    #unity-container {
-      background: transparent !important;
+    #bgVideo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;       /* 最奥 */
+      pointer-events: none;
     }
 
     canvas {
+      position: relative;
+      z-index: 1;
       background: transparent !important;
     }
   </style>
