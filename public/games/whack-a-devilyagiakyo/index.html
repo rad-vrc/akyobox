@@ -325,11 +325,18 @@
           video.play().catch((e) => console.log("Video play error:", e));
         };
 
-        // canplay で再生（load は非同期のため）
-        video.addEventListener("canplay", function handleCanPlay() {
-          video.removeEventListener("canplay", handleCanPlay);
+        // 既にキャッシュ済みなら即再生、そうでなければ canplay を1回だけ待つ
+        if (video.readyState >= 3) {
           startPlayback();
-        });
+        } else {
+          video.addEventListener(
+            "canplay",
+            function handleCanPlay() {
+              startPlayback();
+            },
+            { once: true }
+          );
+        }
       }
 
       // タイトル動画（ループ）
