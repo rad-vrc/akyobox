@@ -1,5 +1,0 @@
-1:"$Sreact.fragment"
-2:I[97367,["/_next/static/chunks/42879de7b8087bc9.js"],"OutletBoundary"]
-3:"$Sreact.suspense"
-0:{"buildId":"zlbLH6KS0bMfVhxCtFe3W","rsc":["$","$1","c",{"children":[["$","main",null,{"style":{"width":"100vw","height":"100vh","display":"flex","flexDirection":"column"},"children":[["$","header",null,{"style":{"padding":"1rem","background":"#202020","color":"white","display":"flex","alignItems":"center","gap":"1rem"},"children":[["$","h1",null,{"style":{"margin":0,"fontSize":"1.5rem"},"children":"Akyobox"}],["$","span",null,{"style":{"opacity":0.7,"fontSize":"0.9rem"},"children":"Whack-a-Akyo Preview"}]]}],["$","div",null,{"style":{"flex":1,"background":"#000"},"children":["$","iframe",null,{"src":"/games/whack-a-devilyagiakyo/index.html","style":{"width":"100%","height":"100%","border":"none","display":"block"},"title":"Whack-a-Akyo","allow":"autoplay; fullscreen; vr"}]}]]}],null,["$","$L2",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@4"}]}]]}],"loading":null,"isPartial":false}
-4:null

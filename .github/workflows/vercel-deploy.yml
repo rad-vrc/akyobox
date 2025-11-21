@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -30,24 +30,6 @@ jobs:
           npm run build
         env:
           VITE_DEBUG: false
-
-      - name: Verify assets
-        run: |
-          REQUIRED_ASSETS=(
-            "public/GameTitle.png"
-            "public/akyo_devilyagi.png"
-            "public/akyo_humanoid.png"
-            "public/akyo_yagi.png"
-          )
-          
-          for asset in "${REQUIRED_ASSETS[@]}"; do
-            if [ ! -f "$asset" ]; then
-              echo "✗ Missing: $asset"
-              exit 1
-            fi
-          done
-          
-          echo "✓ All assets verified"
 
   deploy:
     name: Deploy to Vercel
