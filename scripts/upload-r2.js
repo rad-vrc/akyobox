@@ -1,8 +1,26 @@
 
 export default {
     async fetch(request, env) {
+        // CORS preflight
+        if (request.method === "OPTIONS") {
+            return new Response(null, {
+                status: 204,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET,HEAD,PUT,POST,OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type,Range",
+                    "Access-Control-Max-Age": "86400",
+                },
+            });
+        }
+
         const url = new URL(request.url);
-        const key = url.pathname.slice(1); // Remove leading slash
+        const key = url.pathname.replace(/^\/+/, ""); // normalize leading slashes
+
+        // Protect against missing binding to avoid 1101
+        if (!env.R2_BUCKET) {
+            return new Response("R2 bucket binding missing", { status: 500 });
+        }
 
         // GET: Retrieve file or list bucket
         if (request.method === "GET") {
@@ -16,12 +34,13 @@ export default {
             const options = range ? { rangeHeader: range } : undefined;
             const object = await env.R2_BUCKET.get(key, options);
 
-            if (!object) return new Response("Object not found", { status: 404 });
+            if (!object) return new Response("Object not found", { status: 404, headers: { "Access-Control-Allow-Origin": "*" } });
 
             const headers = new Headers();
             object.writeHttpMetadata(headers);
             headers.set("etag", object.httpEtag);
             headers.set("Access-Control-Allow-Origin", "*");
+            headers.set("Accept-Ranges", "bytes");
 
             if (key.endsWith(".mp4")) {
                 headers.set("Content-Type", "video/mp4");
@@ -56,7 +75,7 @@ export default {
                 const parts = await request.json(); // Expects array of { partNumber, etag }
                 const multipartUpload = env.R2_BUCKET.resumeMultipartUpload(key, uploadId);
                 await multipartUpload.complete(parts);
-                return new Response("Upload completed");
+                return new Response("Upload completed", { headers: { "Access-Control-Allow-Origin": "*" } });
             }
         }
 
@@ -76,7 +95,7 @@ export default {
             // Fallback: Single file upload
             if (!key) return new Response("Key required", { status: 400 });
             await env.R2_BUCKET.put(key, request.body);
-            return new Response(`Uploaded ${key} successfully!`);
+            return new Response(`Uploaded ${key} successfully!`, { headers: { "Access-Control-Allow-Origin": "*" } });
         }
 
         return new Response("Invalid request", { status: 400 });
