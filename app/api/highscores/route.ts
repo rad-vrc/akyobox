@@ -1,7 +1,5 @@
 import { kv } from "@vercel/kv";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-
 export const runtime = "edge";
 
 // 環境変数 GAME_SECRET を使用。なければデフォルト（警告付き）
@@ -33,6 +31,14 @@ function sanitizeScore(raw: unknown): number | null {
   const n = typeof raw === "number" ? raw : Number(raw);
   if (!Number.isFinite(n) || n < 0) return null;
   return Math.floor(n);
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function GET() {
@@ -68,10 +74,7 @@ export async function POST(req: NextRequest) {
 
     // 簡易署名検証: hash(score + SECRET)
     // Unity側も同じロジックで生成する前提
-    const expected = crypto
-      .createHash("sha256")
-      .update(`${score}${SECRET}`)
-      .digest("hex");
+    const expected = await sha256Hex(`${score}${SECRET}`);
 
     if (!signature || signature !== expected) {
       console.warn("Invalid signature attempt", { name, score, signature });
