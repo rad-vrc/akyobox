@@ -39,5 +39,3 @@ next-env.d.ts
 .wrangler
 wrangler.uploader.toml
 
-# Large Assets (Hosted on R2)
-public/games/whack-a-devilyagiakyo/ending.mp4
