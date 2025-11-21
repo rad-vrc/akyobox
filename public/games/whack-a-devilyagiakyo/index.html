@@ -94,43 +94,37 @@
       return document.getElementById("bgVideo");
     }
 
+    function swapVideo(src, loop, tag) {
+      const video = getVideoElement();
+      if (!video) return;
+      video.pause();
+      // 同じ動画を繰り返し要求しない
+      if (video.getAttribute("data-current") !== tag) {
+        video.src = src;
+        video.setAttribute("data-current", tag);
+        video.load();
+      }
+      video.loop = loop;
+      video.currentTime = 0;
+      video.play().catch(e => console.log("Video play error:", e));
+    }
+
     // タイトル動画（ループ）
     window.PlayTitleVideo = function () {
       console.log("JS: PlayTitleVideo called");
-      var video = getVideoElement();
-      if (!video) return;
-
-      // 同じ動画ならリセットしない（シームレスにするため）
-      if (video.getAttribute("data-current") === "title") return;
-
-      video.src = VIDEO_PATH_TITLE;
-      video.loop = true;
-      video.setAttribute("data-current", "title");
-      video.play().catch(e => console.log("Video play error:", e));
+      swapVideo(VIDEO_PATH_TITLE, true, "title");
     };
 
     // ゲーム本編動画（1回再生 or ループ）
     window.PlayGameVideo = function () {
       console.log("JS: PlayGameVideo called");
-      var video = getVideoElement();
-      if (!video) return;
-
-      video.src = VIDEO_PATH_GAME;
-      video.loop = false; // ゲーム中はループしない（Unityの時間と合わせるため）
-      video.setAttribute("data-current", "game");
-      video.play().catch(e => console.log("Video play error:", e));
+      swapVideo(VIDEO_PATH_GAME, false, "game");
     };
 
     // エンディング動画
     window.PlayEndingVideo = function () {
       console.log("JS: PlayEndingVideo called");
-      var video = getVideoElement();
-      if (!video) return;
-
-      video.src = VIDEO_PATH_ENDING;
-      video.loop = true; // エンディングはずっと流しておく？
-      video.setAttribute("data-current", "ending");
-      video.play().catch(e => console.log("Video play error:", e));
+      swapVideo(VIDEO_PATH_ENDING, true, "ending");
     };
 
     // 動画停止
