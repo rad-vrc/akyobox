@@ -1,3 +1,32 @@
+export const metadata = {
+    title: '激烈!!デビルヤギAkyo叩き | Akyobox',
+    description:
+        'PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！',
+    openGraph: {
+        title: '激烈!!デビルヤギAkyo叩き',
+        description:
+            'PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！',
+        url: 'https://akyobox.vercel.app/games/whack-a-devilyagiakyo/',
+        siteName: 'Akyobox',
+        images: [
+            {
+                url: 'https://akyobox.vercel.app/apple-icon.png',
+                width: 512,
+                height: 512,
+                alt: '激烈!!デビルヤギAkyo叩き',
+            },
+        ],
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: '激烈!!デビルヤギAkyo叩き',
+        description:
+            'PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！',
+        images: ['https://akyobox.vercel.app/apple-icon.png'],
+    },
+};
+
 export default function Home() {
     return (
         <main style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
