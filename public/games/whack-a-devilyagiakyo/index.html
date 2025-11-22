@@ -216,7 +216,6 @@
         const input = document.getElementById("playerName");
         if (!input) return "Anonymous";
         const val = sanitizeFrontName(input.value);
-        input.value = val;
         return val;
       }
 
