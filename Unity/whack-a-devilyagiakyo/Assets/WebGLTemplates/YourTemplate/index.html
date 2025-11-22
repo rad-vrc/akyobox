@@ -310,7 +310,7 @@
         return document.getElementById("bgVideo");
       }
 
-      function swapVideo(src, loop, tag) {
+      function swapVideo(src, loop, tag, onEnd) {
         const video = getVideoElement();
         if (!video) return;
         const isNew = video.getAttribute("data-current") !== tag;
@@ -320,8 +320,10 @@
         if (!loop) {
           video.onended = () => {
             video.pause();
-            // 1回で止める
-            video.onended = null;
+            video.onended = null; // 1回で止める
+            if (typeof onEnd === "function") {
+              onEnd();
+            }
           };
         } else {
           video.onended = null;
@@ -374,7 +376,9 @@
       // エンディング動画
       window.PlayEndingVideo = function() {
         console.log("JS: PlayEndingVideo called");
-        swapVideo(VIDEO_PATH_ENDING, false, "ending");
+        swapVideo(VIDEO_PATH_ENDING, false, "ending", () => {
+          window.PlayTitleVideo();
+        });
       };
 
       // 動画停止
