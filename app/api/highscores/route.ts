@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     // ユーザー別に保存
     await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
     // ソートセットにはユーザーキーのみをメンバーとして登録（重複を防ぐ）
-    await kv.zadd(KEY, { [key]: entry.score });
+    await kv.zadd(KEY, { score: entry.score, member: key });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
