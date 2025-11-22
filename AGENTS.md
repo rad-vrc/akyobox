@@ -11,6 +11,13 @@ alwaysApply: true
 
 ## 0. 共通前提
 
+-   **追加禁止事項 (D:\\akyobox 向け)**: PowerShell コマンド（`Get-Content` / `Set-Content` など）で直接コードを書き換えることを禁止します。コード編集は `apply_patch` などの安全な手段を用いてください。
+-   **Serena ツール利用ガイド**:  
+    - まず `list_dir` / `get_symbols_overview` で構造を把握。  
+    - 読むときは `find_symbol` / `find_referencing_symbols` / `search_for_pattern` で必要箇所だけ。  
+    - 編集は `insert_before_symbol` / `insert_after_symbol` / `replace_symbol_body` を優先。  
+    - ファイル全文読みや PowerShell 直接編集は避け、メモ共有は `write_memory` / `read_memory` / `list_memories` を活用。
+
 -   **対象タスク**: コーディング支援、リファクタリング、デバッグ、開発関連ドキュメント作成
 -   **言語**: ユーザーからの指示・入力の言語に従う（特に指示がなければユーザーの使用言語で回答する）。
 -   **ルール優先順位**: システム > ワークスペース共通ルール > 本ファイル（v5）の順に従う。

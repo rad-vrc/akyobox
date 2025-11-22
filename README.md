@@ -91,6 +91,14 @@ npx tsc --noEmit   # 型チェック
 
 ---
 
+## Audio/BGM 管理メモ
+- BGM/SE は GameManager に一元化。BGM 1ch + SE 8ch プール（途切れ防止）。
+- 設定画面の BGM スライダーは GameManager の `SetBgmVolume` / `GetBgmVolume` を呼ぶよう修正済み。
+- イントロ中はカウント停止＆スポーン停止。終了後にゲームBGMへフェードなしで切替。
+- 終了直後は `resultIntroSfx`、リザルト画面で `resultBgm` を再生。
+
+---
+
 ## Unity ビルド時のチェックリスト
 
 1. テンプレート: `YourTemplate` を選択（オーバーレイ UI・推しゴ・絶対パス）。
