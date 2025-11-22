@@ -1,102 +1,126 @@
-# Akyobox (Whack-a-Akyo Portal)
+# Akyobox / 激烈!!デビルヤギAkyo叩き
 
-「Akyo」テーマの Unity WebGL ゲームを Next.js 16 (App Router) で配信するポータルです。現在は **whack-a-devilyagiakyo** を掲載中（ヘッダー表記: 「激烈!!デビルヤギAkyo叩き」）。
+Next.js 16 (App Router) で Unity WebGL ゲーム「whack-a-devilyagiakyo」を配信するポータル。ゲーム本体は `public/games/whack-a-devilyagiakyo` のビルド成果物をそのまま配信する構成。
 
 ---
 
-## 技術スタック
+## 全体構成
 
--   Next.js 16 (App Router) / TypeScript
--   Unity 6 WebGL ビルド（Brotli 圧縮）
--   Vercel（ホスティング、KV）
--   フォント: 推しゴ (`/fonts/oshigo.otf`) を全 UI に適用
+- フロント: Next.js 16 / TypeScript（App Router）
+- ゲーム: Unity 6 WebGL ビルド（テンプレート `YourTemplate` を使用）
+- ホスティング: Vercel（KV でランキング保存）
+- フォント: 推しゴ（`/fonts/oshigo.otf`）を全 UI に適用
+- ブランチ: `feature/game-logic`
 
-## 機能ハイライト
-
--   Unity WebGL を `iframe` で埋め込み（`app/page.tsx`）
--   背景動画（タイトル/ゲーム/エンディング）は絶対パスでプリロードし、キャンバス背面に再生
--   ランキング TOP10：Vercel KV に保存、同一ユーザーはベストスコアのみ保持（大小文字を無視し、匿名ユーザーはブラウザごとの anonId で衝突回避）
--   イントロ演出：開始前にイントロBGM再生（デフォルト10秒）、イントロ用テキスト表示・ノイズオーバーレイ（Unity 側で設定）
--   BGM/SE 一元管理：GameManager が BGM 1ch ＋ SE 8ch プールで途切れ防止。終了直後は resultIntroSfx、エンディング画面で resultBgm
--   モバイル最適化：`config.devicePixelRatio = 1`、Brotli 配信ヘッダーを強化
--   名前入力・ランキング UI は WebGL オーバーレイ（テンプレートと `public` 両方に同実装）
+---
 
 ## ディレクトリ
 
--   `app/page.tsx` … 入口。右上に「Akyobox」ヘッダー（推しゴ）、`iframe` でゲームを表示
--   `app/api/highscores/route.ts` … ランキング API（Edge Runtime, Vercel KV, anonId で匿名衝突回避）
--   `public/games/whack-a-devilyagiakyo/` … Unity ビルド一式と動画 (`title.mp4`, `game-bg.mp4`, `ending.mp4`)
--   `Unity/whack-a-devilyagiakyo/Assets/WebGLTemplates/YourTemplate/` … Unity ビルドテンプレート（オーバーレイ UI・動画パス・フォント指定を保持）
--   `next.config.mjs` / `vercel.json` … `.br` への `Content-Encoding` / `Content-Type` / キャッシュヘッダー（immutable, no-transform）。Catch-all `.br` にも Content-Type を付与済み。
+- `app/page.tsx` … 入口ページ。右上にヘッダー「激烈!!デビルヤギAkyo叩き」、`iframe` で WebGL を埋め込み。
+- `app/api/highscores/route.ts` … ランキング API（Edge Runtime, Vercel KV）。
+- `public/games/whack-a-devilyagiakyo/` … Unity 出力一式と動画 (`title.mp4`, `game-bg.mp4`, `ending.mp4`)。
+- `Unity/whack-a-devilyagiakyo/Assets/WebGLTemplates/YourTemplate/` … Unity ビルドテンプレート（オーバーレイ UI / 絶対パス / 推しゴ指定）。※ git ignore のためローカルのみ。
+- `vercel.json` … Unity ビルドファイル用ヘッダー（Content-Type / immutable cache）。現在は **非圧縮配信** に切り替え済み（`.br` なし）。
 
-## 環境変数（Vercel）
+---
 
-| KEY                           | 用途                             |
-| ----------------------------- | -------------------------------- |
-| `KV_REST_API_URL`             | Upstash / Vercel KV              |
-| `KV_REST_API_TOKEN`           | 同上                             |
-| `KV_REST_API_READ_ONLY_TOKEN` | 同上                             |
-| (任意) `GAME_SECRET`          | 現在未使用（署名検証は無効化済） |
+## 現在の挙動・パラメータ（Unity 側）
 
-## セットアップ
+※ Unity プロジェクトは `D:\Unity\whack-a-devilyagiakyo`（リポジトリ外）。再ビルド時は同じ設定を維持してください。
+
+- スポーン倍率（固定）  
+  - 60〜30秒: 3x, 30〜15秒: 6x, 15〜0秒: 12x  
+  - 当たり:ハズレ ≈ 2:1（targetProbability ≈ 0.66）、waveCountMultiplier = 2
+- イントロ演出: 開始前 10 秒をイントロ BGM＋テキスト（ノイズ演出）で再生。イントロ中はタイマー・スポーン停止。
+- サイレン SE: 残り30秒 / 15秒で順に鳴動。
+- コンボ: ゲーム終了でリセット。
+- サウンド管理: GameManager が BGM 1ch ＋ SE 8ch プール（途切れ防止）。終了直後は resultIntroSfx、リザルト画面で resultBgm。
+- 動画 / フォントパスは絶対パスで統一（iframe でも崩れない）。
+
+---
+
+## ランキング API 仕様（/api/highscores）
+
+- GET: TOP10 降順を返す。ZSET メンバーは `userKey = sanitize(name).toLowerCase() + ':' + anonId` で一意。
+- POST: `{ name, score, anonId? }`  
+  - 制御文字 / `< >` を除去。空になった場合は `"Anonymous"`。  
+  - 既存スコアより低い場合は無視。  
+  - KV: `highscores-by-user` (Hash) に JSON、`highscores` (ZSET) にベストスコアのみ。
+- 署名検証は現在オフ（クライアント側ハッシュ未実装のため）。
+
+---
+
+## フロントエンド備考
+
+- 推しゴを `@font-face` で読み込み、入力・ランキング・ヘッダーに適用。
+- ラベル/入力は大きめで UD を意識（ランキングは TOP10 表示）。
+- 動画プリロードは絶対パス (`/games/whack-a-devilyagiakyo/*.mp4`)。
+
+---
+
+## 開発コマンド
 
 ```bash
-npm install        # 依存インストール
+npm install
 npm run dev        # http://localhost:3000
-npm run lint       # Lint
-npx tsc --noEmit   # 型チェック
+npm run lint       # ESLint
 npm run build      # 本番ビルド
+npx tsc --noEmit   # 型チェック
 ```
 
-## デプロイ（Vercel）
+---
 
-1. 上記環境変数を Vercel に設定
-2. `npm run build` で通ることを確認
-3. `vercel --prod` あるいは Git 連携でデプロイ
-    - Brotli ヘッダーは `next.config.mjs` / `vercel.json` により自動付与
-    - 動画/ビルドパスは絶対パス指定済みのため iframe でも解決ずれなし
+## デプロイ手順（Vercel）
 
-## Unity ビルド手順メモ
+1) 環境変数（すべて Vercel に登録）
 
-1. Unity プロジェクト（ローカル `D:\Unity\whack-a-devilyagiakyo`）で WebGL ビルドターゲットを選択
-2. テンプレートを `YourTemplate` に設定（オーバーレイ UI・絶対パス・推しゴ）
-3. 出力先を `public/games/whack-a-devilyagiakyo/` に上書き
-4. Brotli 圧縮を有効化（.wasm.br, .js.br, .data.br）
+| KEY                           | 用途              |
+| ----------------------------- | ----------------- |
+| KV_REST_API_URL               | Vercel KV         |
+| KV_REST_API_TOKEN             | 同上              |
+| KV_REST_API_READ_ONLY_TOKEN   | 同上              |
+| KV_URL (互換用)               | 同上              |
 
-### Unity 側ローカル変更（リポジトリ外）
+2) `npm run build` が通ることを確認  
+3) Git push で自動デプロイ or `vercel --prod`
 
--   スポーン倍率固定: 60〜30秒 3x / 30〜15秒 6x / 15〜0秒 12x（GameManagerで固定）
--   当たり出現率: `targetProbability ≈ 0.66`（当たり2:ハズレ1）、`waveCountMultiplier = 2`
--   イントロBGM（約10秒）+ イントロテキスト/ノイズ。イントロ中はタイマー・スポーン停止
--   サイレン SE（30 秒/15 秒の 2 段階）
--   テレグラフ演出、コンボボーナス、ゲーム終了時にコンボリセット
--   BGM/SE: GameManager が一元管理（BGM1ch、SEは8chプール。終了直後は resultIntroSfx、エンディング画面で resultBgm）
-    ※ Unity フォルダは `.gitignore`。再ビルド時に `public/games/...` を差し替えれば反映。
+### 配信ヘッダー
 
-## ランキング API 仕様
+- `vercel.json` で `*.data / *.wasm / *.js` に Content-Type と `Cache-Control: public, max-age=31536000, immutable, no-transform` を付与。  
+- 現在は **非圧縮ファイル** を配信（`.br` は使用しない）。ブラウザが勝手に Brotli と解釈して壊れる問題を回避済み。
 
--   `GET /api/highscores` … TOP10 を返却（降順）。KV の ZSET メンバーはユーザーキー（小文字 + anonId）で一意。
--   `POST /api/highscores` … `{ name, score, anonId? }` を保存。既存より低いスコアは無視。
-    -   文字は制御文字/<>を除去し、空や全除去なら `"Anonymous"`。
-    -   匿名名は `anonymous:<anonId>` でキー化し、ブラウザごとに重複しないようにする。
-    -   保存は `highscores-by-user` (Hash) + `highscores` (ZSET) にベストスコアのみ。
+---
 
-## 既知の注意 / トラブルシュート
+## Unity ビルド時のチェックリスト
 
--   モバイルで動画/Unity が出ない: デプロイ後に CF プロキシを使う場合は一度 DNS only で確認。キャッシュをパージ。
--   Brotli 404/デコード失敗: `next.config.mjs` のパターン修正済み。`.br` に `Content-Encoding: br` が付くかレスポンスヘッダーで確認。
--   名前ハイライト: 大文字小文字は無視して照合。匿名同士は anonId で分離。
+1. テンプレート: `YourTemplate` を選択（オーバーレイ UI・推しゴ・絶対パス）。
+2. 出力先: `public/games/whack-a-devilyagiakyo/` に上書きコピー。  
+   - 必要ファイル: `.data`, `.wasm`, `.framework.js`, `.loader.js`, `index.html`, `Videos/*.mp4`
+3. 圧縮: 現状 **圧縮しない**（`.br` を出力しない設定にするか、出力後に .br を削除）。
+4. ビルド後、`public` 側とテンプレート側で動画/フォント/パスの差異がないか確認。
 
-## デザイン・フォント
+---
 
--   推しゴを `@font-face` で読み込み、オーバーレイ UI とヘッダーに適用。
--   ラベル/入力/ランキングは大きめのサイズでユニバーサルデザインを意識。
+## トラブルシュート
 
-## コミット状況
+- wasm がロードできない / `Import requires a callable` など  
+  → .br が混入していないか確認。`public/games/.../Build` 内に `.br` が残っていれば削除し、`vercel.json` は非圧縮用になっていることを確認。
+- 画面が真っ黒 / 動画が出ない  
+  → 動画パスが相対になっていないか確認（絶対パス必須）。テンプレートと `public` の両方を同じ記述に。
+- ランキングに名前が反映されない  
+  → 文字列が空 or 制御文字のみの場合 `"Anonymous"` にフォールバック。KV 側キー衝突がないか（anonId を付ける）。
 
--   最新ブランチ: `feature/game-logic`
--   直近コミット: `6cf6cf25`（kv.zadd フォーマット修正） / Unity 変更はローカルのみ
+---
 
 ## CI
 
-- GitHub Actions: `tsc` / `eslint` / `knip`（デッドコード） / `next build`
+- GitHub Actions: `tsc`, `eslint`, `knip`（デッドコード）を実行。`next build` で本番相当チェック。
+
+---
+
+## 最近の変更（要約）
+
+- Unity ビルドを **非圧縮配信** に切替（wasm Import エラーを解消）。
+- `vercel.json` を非圧縮ヘッダーに更新。
+- テンプレート / public の `index.html` で `.br` 参照を排除。動画・フォントは絶対パス維持。
+- スポーン倍率とサウンド管理は GameManager に集約（BGM/SE の途切れ防止、コンボリセット、サイレン SE）。
