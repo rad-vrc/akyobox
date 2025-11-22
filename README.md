@@ -116,6 +116,8 @@ npx tsc --noEmit   # 型チェック
   → .br が混入していないか確認。`public/games/.../Build` 内に `.br` が残っていれば削除し、`vercel.json` は非圧縮用になっていることを確認。
 - 画面が真っ黒 / 動画が出ない  
   → 動画パスが相対になっていないか確認（絶対パス必須）。テンプレートと `public` の両方を同じ記述に。
+- エンディング動画がループする  
+  → テンプレと `public` 両方の `bgVideo` に `loop` 属性が残っていないか確認。JS の `swapVideo` で `removeAttribute("loop")` する版をビルド成果物に反映する。
 - ランキングに名前が反映されない  
   → 文字列が空 or 制御文字のみの場合 `"Anonymous"` にフォールバック。KV 側キー衝突がないか（anonId を付ける）。
 
@@ -133,3 +135,5 @@ npx tsc --noEmit   # 型チェック
 - `vercel.json` を非圧縮ヘッダーに更新。
 - テンプレート / public の `index.html` で `.br` 参照を排除。動画・フォントは絶対パス維持。
 - スポーン倍率とサウンド管理は GameManager に集約（BGM/SE の途切れ防止、コンボリセット、サイレン SE）。
+- 第2サイレン時に TextMeshPro UI を5秒表示できるフィールド `secondSirenText` を GameManager に追加（Scene でアサイン必須）。
+- エンディング動画ループ対策：`bgVideo` の `loop` 属性を外し、`swapVideo` で非ループ時に `removeAttribute("loop")` を実行するよう統一。
