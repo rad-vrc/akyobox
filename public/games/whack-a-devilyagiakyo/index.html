@@ -315,8 +315,11 @@
         if (!video) return;
         const isNew = video.getAttribute("data-current") !== tag;
 
-        // ループ設定と onended は毎回同期する
+        // ループ設定と onended は毎回同期する（属性も明示的に外す）
         video.loop = loop === true;
+        if (!loop) {
+          video.removeAttribute("loop");
+        }
         if (!loop) {
           video.onended = () => {
             video.pause();
