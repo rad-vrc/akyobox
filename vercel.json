@@ -68,6 +68,10 @@
       "source": "/games/whack-a-devilyagiakyo/Build/(.*).br",
       "headers": [
         {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        },
+        {
           "key": "Content-Encoding",
           "value": "br"
         },

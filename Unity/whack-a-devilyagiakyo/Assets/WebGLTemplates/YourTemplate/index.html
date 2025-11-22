@@ -219,6 +219,15 @@
         return val;
       }
 
+      function getAnonId() {
+        const key = "playerAnonId";
+        let id = localStorage.getItem(key);
+        if (!id) {
+          id = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10));
+          localStorage.setItem(key, id);
+        }
+        return id;
+      }
       function attachNameInput() {
         const input = document.getElementById("playerName");
         if (!input) return;
@@ -282,11 +291,12 @@
 
       async function submitScore(score, signature) {
         const name = getPlayerName();
+        const anonId = getAnonId();
         try {
           await fetch(HIGHSCORE_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, score, signature }),
+            body: JSON.stringify({ name, score, signature, anonId }),
           });
           fetchHighscores();
         } catch (e) {

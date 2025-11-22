@@ -12,8 +12,12 @@ const KEY = "highscores";
 const LIMIT = 10;
 const USER_HASH = "highscores-by-user";
 
-function userKey(name: string) {
-  return name.toLowerCase();
+function userKey(name: string, anonId?: string) {
+  const lowered = name.toLowerCase();
+  if (lowered === "anonymous") {
+    return `anonymous:${anonId ?? "shared"}`;
+  }
+  return `name:${lowered}`;
 }
 
 function sanitizeName(raw: unknown): string {
@@ -58,13 +62,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const name = sanitizeName(body?.name);
+    const anonId =
+      typeof body?.anonId === "string"
+        ? body.anonId.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32)
+        : undefined;
     const score = sanitizeScore(body?.score);
     if (score === null) {
       return NextResponse.json({ error: "invalid score" }, { status: 400 });
     }
 
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
-    const existingRaw = await kv.hget<string>(USER_HASH, userKey(name));
+    const key = userKey(name, anonId);
+    const existingRaw = await kv.hget<string>(USER_HASH, key);
     let existing: Entry | null = null;
     if (existingRaw) {
       try {
@@ -80,7 +89,6 @@ export async function POST(req: NextRequest) {
 
     const entry: Entry = { name, score, at: Date.now() };
     // ユーザー別に保存
-    const key = userKey(name);
     await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
     // ソートセットにはユーザーキーのみをメンバーとして登録（重複を防ぐ）
     await kv.zadd(KEY, { score: entry.score, member: key });
