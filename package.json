@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deadcode": "knip"
   },
   "dependencies": {
     "@vercel/kv": "^3.0.0",
@@ -20,6 +21,16 @@
     "@types/react-dom": "^18",
     "eslint": "^9",
     "eslint-config-next": "latest",
+    "knip": "^5.36.0",
     "typescript": "^5"
+  },
+  "knip": {
+    "ignore": [
+      "public/**",
+      "Unity/**"
+    ],
+    "entry": [
+      "app/**/*.{ts,tsx}"
+    ]
   }
 }

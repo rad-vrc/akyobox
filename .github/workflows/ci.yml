@@ -29,6 +29,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Dead code check (knip)
+        run: npm run deadcode
+
       - name: Build project
         run: npm run build
 
