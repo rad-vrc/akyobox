@@ -55,6 +55,7 @@ Next.js 16 (App Router) で Unity WebGL ゲーム「whack-a-devilyagiakyo」を�
 - 推しゴを `@font-face` で読み込み、入力・ランキング・ヘッダーに適用。
 - ラベル/入力は大きめで UD を意識（ランキングは TOP10 表示）。
 - 動画プリロードは絶対パス (`/games/whack-a-devilyagiakyo/*.mp4`)。
+- ルート（`/`）もゲームページ（`/games/whack-a-devilyagiakyo/`）も同じOG/Twitterカード設定。画像は `https://akyobox.vercel.app/apple-icon.png`。共有時は `summary_large_image` で表示される。
 
 ---
 
