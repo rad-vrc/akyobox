@@ -24,6 +24,7 @@ function sanitizeName(raw: unknown): string {
   if (typeof raw !== "string") return "Anonymous";
   const trimmed = raw.trim().replace(/\s+/g, " ");
   // remove angle brackets and control chars
+  // eslint-disable-next-line no-control-regex
   const cleaned = trimmed.replace(/[<>]/g, "").replace(/[\u0000-\u001F\u007F]/g, "");
   if (!cleaned) return "Anonymous";
   return cleaned.slice(0, 16);

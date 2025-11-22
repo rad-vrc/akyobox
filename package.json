@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext ts,tsx --max-warnings=0",
     "deadcode": "knip"
   },
   "dependencies": {
@@ -21,6 +21,8 @@
     "@types/react-dom": "^18",
     "eslint": "^9",
     "eslint-config-next": "latest",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.7",
     "knip": "^5.36.0",
     "typescript": "^5"
   },
