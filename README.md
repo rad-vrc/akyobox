@@ -84,10 +84,11 @@ npx tsc --noEmit   # 型チェック
 2) `npm run build` が通ることを確認  
 3) Git push で自動デプロイ or `vercel --prod`
 
-### 配信ヘッダー
+### 配信ヘッダー（非圧縮で運用）
 
-- `vercel.json` で `*.data / *.wasm / *.js` に Content-Type と `Cache-Control: public, max-age=31536000, immutable, no-transform` を付与。  
-- 現在は **非圧縮ファイル** を配信（`.br` は使用しない）。ブラウザが勝手に Brotli と解釈して壊れる問題を回避済み。
+- `vercel.json` で `/games/whack-a-devilyagiakyo/Build/*.data|*.wasm|*.js` に Content-Type を付与し、`Cache-Control: public, max-age=0, must-revalidate, no-transform` で常に再検証。  
+- **Content-Encoding は付けない**（非圧縮ファイルのみ配信）。`.br` は置かない。  
+- もし誤って `.br` を置くと wasm 破損で `both async and sync fetching of the wasm failed` になるので注意。
 
 ---
 
