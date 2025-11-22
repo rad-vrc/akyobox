@@ -5,7 +5,6 @@
       "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.data",
       "headers": [
         { "key": "Content-Type", "value": "application/octet-stream" },
-        { "key": "Content-Encoding", "value": "br" },
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable, no-transform" }
       ]
     },
@@ -13,7 +12,6 @@
       "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.wasm",
       "headers": [
         { "key": "Content-Type", "value": "application/wasm" },
-        { "key": "Content-Encoding", "value": "br" },
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable, no-transform" }
       ]
     },
@@ -21,7 +19,6 @@
       "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.js",
       "headers": [
         { "key": "Content-Type", "value": "application/javascript" },
-        { "key": "Content-Encoding", "value": "br" },
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable, no-transform" }
       ]
     }
