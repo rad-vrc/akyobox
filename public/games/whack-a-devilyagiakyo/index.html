@@ -327,6 +327,14 @@
                     localStorage.setItem('playerName', getPlayerName());
                     applyFont();
                 });
+                
+                // Unityにキー入力を奪われないようにする（バックスペース等が効かなくなる対策）
+                input.addEventListener('keydown', (e) => {
+                    e.stopPropagation();
+                });
+                input.addEventListener('keyup', (e) => {
+                    e.stopPropagation();
+                });
             }
 
             async function fetchHighscores() {
