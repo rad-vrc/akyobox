@@ -64,7 +64,9 @@ export async function GET() {
           }
           return JSON.parse(raw) as Entry;
         } catch (e: any) {
-          debugErrors.push({ member, error: e.message });
+          // 生データもログに含めることで、"[object Object]" になっていないか確認
+          const rawDebug = await kv.hget<string>(USER_HASH, member).catch(() => "fetch_failed");
+          debugErrors.push({ member, error: e.message, rawData: rawDebug });
           return null;
         }
       })
