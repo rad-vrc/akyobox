@@ -359,7 +359,10 @@
                     } else if (data && Array.isArray(data.list)) {
                         list = data.list;
                         console.log('Fetch Debug:', data.debug);
-                        uiLog(`Debug RawMembers: ${JSON.stringify(data.debug.rawMembers)}`);
+                        uiLog(`Debug Raw: ${JSON.stringify(data.debug.rawMembers)}`);
+                        if (data.debug.debugErrors && data.debug.debugErrors.length > 0) {
+                             uiLog(`Debug errs: ${JSON.stringify(data.debug.debugErrors)}`);
+                        }
                     }
                     
                     uiLog(`Fetched: ${list.length} scores`);
