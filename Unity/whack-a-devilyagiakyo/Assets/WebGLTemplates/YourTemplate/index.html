@@ -415,26 +415,33 @@
                 return document.getElementById('bgVideo');
             }
 
+            let currentVideoNonce = 0;
+
             function swapVideo(src, loop, tag, onEnd) {
                 const video = getVideoElement();
                 if (!video) return;
                 const isNew = video.getAttribute('data-current') !== tag;
+                const nonce = ++currentVideoNonce;
 
-                // ループ設定と onended は毎回同期する（属性も明示的に外す）
+                // ループ設定と onended は毎回同期する（属性も明示的に操作）
                 video.loop = loop === true;
-                if (!loop) {
-                    video.removeAttribute('loop');
-                }
-                if (!loop) {
-                    video.onended = () => {
-                        video.pause();
-                        video.onended = null; // 1回で止める
-                        if (typeof onEnd === 'function') {
-                            onEnd();
-                        }
-                    };
-                } else {
+                if (loop) {
+                    video.setAttribute('loop', 'true');
                     video.onended = null;
+                } else {
+                    video.removeAttribute('loop');
+                    video.onended = null;
+                    video.addEventListener(
+                        'ended',
+                        () => {
+                            if (nonce !== currentVideoNonce) return;
+                            video.pause();
+                            if (typeof onEnd === 'function') {
+                                onEnd();
+                            }
+                        },
+                        { once: true }
+                    );
                 }
 
                 // ソースが同じなら再ロードしない（意図しない巻き戻し防止）
@@ -451,6 +458,7 @@
                 video.load(); // 非同期
 
                 const startPlayback = () => {
+                    if (nonce !== currentVideoNonce) return;
                     video.currentTime = 0;
                     video.play().catch((e) => console.log('Video play error:', e));
                 };

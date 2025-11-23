@@ -38,7 +38,23 @@ function sanitizeScore(raw: unknown): number | null {
 
 export async function GET() {
   try {
-    const members = (await kv.zrange(KEY, -LIMIT, -1, { rev: true })) as string[];
+    type RawMember = string | { member: unknown };
+
+    const rawMembers = (await kv.zrange(KEY, -LIMIT, -1, {
+      rev: true,
+    })) as RawMember[];
+
+    const members = rawMembers
+      .map((m) => {
+        if (typeof m === "string") return m;
+        if (m && typeof m === "object" && "member" in m) {
+          const val = (m as { member: unknown }).member;
+          if (typeof val === "string") return val;
+        }
+        return "";
+      })
+      .filter((m) => m.length > 0);
+
     const entries = await Promise.all(
       members.map(async (member) => {
         try {

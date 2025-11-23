@@ -415,26 +415,34 @@
                 return document.getElementById('bgVideo');
             }
 
+            let currentVideoNonce = 0;
+
             function swapVideo(src, loop, tag, onEnd) {
                 const video = getVideoElement();
                 if (!video) return;
                 const isNew = video.getAttribute('data-current') !== tag;
+                const nonce = ++currentVideoNonce;
 
-                // ループ設定と onended は毎回同期する（属性も明示的に外す）
+                // ループ設定と onended は毎回同期する（属性も明示的に操作）
                 video.loop = loop === true;
-                if (!loop) {
-                    video.removeAttribute('loop');
-                }
-                if (!loop) {
-                    video.onended = () => {
-                        video.pause();
-                        video.onended = null; // 1回で止める
-                        if (typeof onEnd === 'function') {
-                            onEnd();
-                        }
-                    };
-                } else {
+                if (loop) {
+                    video.setAttribute('loop', 'true');
                     video.onended = null;
+                } else {
+                    video.removeAttribute('loop');
+                    video.onended = null;
+                    video.addEventListener(
+                        'ended',
+                        () => {
+                            // 別動画に切り替わった後なら無視
+                            if (nonce !== currentVideoNonce) return;
+                            video.pause();
+                            if (typeof onEnd === 'function') {
+                                onEnd();
+                            }
+                        },
+                        { once: true }
+                    );
                 }
 
                 // ソースが同じなら再ロードしない（意図しない巻き戻し防止）
@@ -451,6 +459,7 @@
                 video.load(); // 非同期
 
                 const startPlayback = () => {
+                    if (nonce !== currentVideoNonce) return; // 他の再生リクエストが来た場合は無視
                     video.currentTime = 0;
                     video.play().catch((e) => console.log('Video play error:', e));
                 };
@@ -551,6 +560,18 @@
                 productName: 'whack-a-devilyagiakyo',
                 productVersion: '1.0',
                 showBanner: unityShowBanner,
+                // --------------------------------------------------
+                // GPU最適化設定
+                // --------------------------------------------------
+                webglContextAttributes: {
+                    // ディスクリートGPU（Radeon/GeForce等）の利用を優先させる
+                    powerPreference: "high-performance",
+                    // 描画バッファを保持しない（パフォーマンス向上）
+                    preserveDrawingBuffer: false,
+                    // アルファ（透明度）は背景動画のために必須だが、
+                    // 不要な場合は false にすると速くなる。今回は必須なので true (デフォルト)
+                    alpha: true
+                },
                 // errorHandler: function(err, url, line) {
                 //    alert("error " + err + " occurred at line " + line);
                 //    // Return 'true' if you handled this error and don't want Unity
@@ -592,6 +613,9 @@
                 // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
                 canvas.style.width = '1920px';
                 canvas.style.height = '1080px';
+                // 高解像度モニターで4K描画などになってFPSが落ちるのを防ぐため、
+                // ピクセル比を最大1に制限（あるいは Math.min(window.devicePixelRatio, 1.5) 等）
+                config.devicePixelRatio = 1;
             }
 
             document.querySelector('#unity-loading-bar').style.display = 'block';
