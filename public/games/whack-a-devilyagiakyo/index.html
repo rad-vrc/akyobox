@@ -601,6 +601,9 @@
                 // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
                 canvas.style.width = '1920px';
                 canvas.style.height = '1080px';
+                // 高解像度モニターで4K描画などになってFPSが落ちるのを防ぐため、
+                // ピクセル比を最大1に制限（あるいは Math.min(window.devicePixelRatio, 1.5) 等）
+                config.devicePixelRatio = 1;
             }
 
             document.querySelector('#unity-loading-bar').style.display = 'block';
