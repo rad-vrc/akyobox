@@ -267,6 +267,12 @@
             const HIGHSCORE_ENDPOINT = '/api/highscores';
             let lastPostedScore = 0;
             let lastPostedName = 'Anonymous';
+            // ローカル保存された自己ベストを読み込む
+            let myBestScore = 0;
+            try {
+                const savedScore = localStorage.getItem('myHighScore');
+                if (savedScore) myBestScore = parseInt(savedScore, 10) || 0;
+            } catch(e) {}
 
             // ==========================================
             // Highscore & Name handling
@@ -380,7 +386,19 @@
                 const anonId = getAnonId();
                 lastPostedScore = score;
                 lastPostedName = name;
+                
+                // 自己ベスト更新なら保存
+                if (score > myBestScore) {
+                    myBestScore = score;
+                    try {
+                        localStorage.setItem('myHighScore', myBestScore);
+                    } catch (e) {
+                        // プライベートブラウズ等で保存できない場合は無視して進む
+                        console.warn('LocalStorage write failed:', e);
+                    }
+                }
                 updateShareButton();
+
                 try {
                     await fetch(HIGHSCORE_ENDPOINT, {
                         method: 'POST',
@@ -398,13 +416,17 @@
             function updateShareButton() {
                 const btn = document.getElementById('share-button');
                 if (!btn) return;
-                const enabled = Number.isFinite(lastPostedScore) && lastPostedScore > 0;
+                // 今回のスコア または 過去の自己ベスト があればボタン有効
+                const targetScore = Math.max(lastPostedScore, myBestScore);
+                const enabled = Number.isFinite(targetScore) && targetScore > 0;
                 btn.disabled = !enabled;
             }
 
             function shareToX() {
-                if (!(Number.isFinite(lastPostedScore) && lastPostedScore > 0)) return;
-                const scoreText = `#デビルヤギAkyo叩き で ${lastPostedScore} 点獲得したよ！`;
+                const targetScore = Math.max(lastPostedScore, myBestScore);
+                if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
+                
+                const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
                 const url = location.origin + '/games/whack-a-devilyagiakyo/';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(

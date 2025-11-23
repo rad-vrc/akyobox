@@ -15,10 +15,13 @@ const LIMIT = 10;
 const USER_HASH = "highscores-by-user";
 
 function userKey(name: string, anonId?: string) {
-  const lowered = name.toLowerCase();
-  if (lowered === "anonymous") {
-    return `anonymous:${anonId && anonId.length > 0 ? anonId : "shared"}`;
+  // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
+  // これにより「名前変更」が可能になる
+  if (anonId && anonId.length > 0) {
+      return `user:${anonId}`;
   }
+  // 万が一 anonId がない場合は古いロジック（またはエラー）
+  const lowered = name.toLowerCase();
   return `name:${lowered}`;
 }
 
@@ -119,17 +122,50 @@ export async function POST(req: NextRequest) {
     // 既存スコアを確認し、ハイスコア更新時のみ保存
     const currentBest = await kv.get<Entry>(detailKey);
     // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
-    // もし既存スコアの方が高ければ何もしない
-    if (currentBest && typeof currentBest === 'object' && 'score' in currentBest && Number(currentBest.score) >= score) {
-        return NextResponse.json({ ok: true, kept: true, debug: { msg: "Highscore not broken", old: currentBest.score, new: score } });
+    
+    let shouldUpdate = false;
+    let finalScore = score;
+    let finalAt = Date.now();
+
+    if (currentBest && typeof currentBest === 'object' && 'score' in currentBest) {
+        const bestScore = Number(currentBest.score);
+        
+        if (score > bestScore) {
+            // ハイスコア更新！ -> 全更新
+            shouldUpdate = true;
+            finalScore = score;
+        } else if (currentBest.name !== name) {
+            // スコアは更新してないが、名前が変わった -> 名前だけ更新（スコアは維持）
+            shouldUpdate = true;
+            finalScore = bestScore; // 既存のベストスコアを維持
+            finalAt = currentBest.at; // 日時も維持（あるいは更新？まあ維持でよい）
+        } else {
+            // スコアも名前も更新なし -> 何もしない
+            return NextResponse.json({ ok: true, kept: true, debug: { msg: "No changes", old: bestScore, new: score } });
+        }
+    } else {
+        // 新規ユーザー -> 保存
+        shouldUpdate = true;
     }
 
-    await kv.set(detailKey, jsonVal);
-    
-    // ソートセットにはユーザーキーのみをメンバーとして登録
-    const zaddResult = await kv.zadd(KEY, { score: entry.score, member: key });
+    if (shouldUpdate) {
+        const entry: Entry = { 
+            name: String(name), 
+            score: Number(finalScore), 
+            at: finalAt
+        };
 
-    return NextResponse.json({ ok: true, debug: { key, detailKey, name, score, jsonValType: typeof jsonVal, jsonVal, zaddResult } });
+        // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
+        const jsonVal = JSON.stringify(entry);
+        await kv.set(detailKey, jsonVal);
+        
+        // ソートセットにはユーザーキーのみをメンバーとして登録
+        const zaddResult = await kv.zadd(KEY, { score: finalScore, member: key });
+
+        return NextResponse.json({ ok: true, debug: { key, name, score: finalScore, updated: true } });
+    }
+    
+    return NextResponse.json({ ok: true, ignored: true });
   } catch (err: any) {
     console.error("POST /api/highscores error", err);
     return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
