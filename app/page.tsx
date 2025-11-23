@@ -41,8 +41,7 @@ export default function Home() {
                     fontFamily: '"Oshigo", "JetBrains Mono", monospace',
                 }}
             >
-                <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>Akyobox</h1>
-                <span style={{ opacity: 0.8, fontSize: '1rem' }}>Whack-a-Akyo Preview</span>
+                <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>激烈!!デビルヤギAkyo叩き</h1>
             </header>
             <div style={{ flex: 1, background: '#000' }}>
                 <iframe
