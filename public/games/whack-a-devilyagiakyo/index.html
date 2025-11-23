@@ -361,7 +361,9 @@
                         console.log('Fetch Debug:', data.debug);
                         uiLog(`Debug Raw: ${JSON.stringify(data.debug.rawMembers)}`);
                         if (data.debug.debugErrors && data.debug.debugErrors.length > 0) {
-                             uiLog(`Debug errs: ${JSON.stringify(data.debug.debugErrors)}`);
+                             // エラー詳細と、もしあれば生データ(rawData)も表示
+                             const errs = data.debug.debugErrors.map(e => `${e.error} (val:${e.rawData})`).join(', ');
+                             uiLog(`Debug errs: ${errs}`);
                         }
                     }
                     
