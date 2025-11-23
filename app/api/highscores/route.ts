@@ -114,6 +114,12 @@ export async function POST(req: NextRequest) {
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
     
+    const entry: Entry = { 
+        name: String(name), 
+        score: Number(score), 
+        at: Date.now() 
+    };
+
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     const jsonVal = JSON.stringify(entry);
 
