@@ -41,7 +41,10 @@ export default function Home() {
                     fontFamily: '"Oshigo", "JetBrains Mono", monospace',
                 }}
             >
-                <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>Akyobox</h1>
+                <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>
+                    Akyobox -
+                    おもかったらブラウザのせっていでハードウェア/グラフィックアクセラレーションをONにしてね！
+                </h1>
             </header>
             <div style={{ flex: 1, background: '#000' }}>
                 <iframe
