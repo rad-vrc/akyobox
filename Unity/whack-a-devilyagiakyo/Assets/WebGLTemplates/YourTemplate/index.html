@@ -62,20 +62,37 @@
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
-                width: 1920px;
-                height: 1080px;
+                
+                /* デフォルトは画面いっぱいに合わせつつアスペクト比16:9を維持 */
+                aspect-ratio: 16 / 9;
+                
                 background: transparent !important;
                 overflow: hidden;
             }
 
-            /* モバイルは全画面フィル */
+            /* 画面が横長すぎる場合: 高さを基準に幅を決める */
+            @media (min-aspect-ratio: 16/9) {
+                #unity-container {
+                    height: 100vh;
+                    width: auto;
+                }
+            }
+            /* 画面が縦長すぎる場合: 幅を基準に高さを決める */
+            @media (max-aspect-ratio: 16/9) {
+                #unity-container {
+                    width: 100vw;
+                    height: auto;
+                }
+            }
+
+            /* モバイルは全画面フィル (強制) */
             #unity-container.unity-mobile {
                 position: fixed;
                 left: 0;
                 top: 0;
                 transform: none;
-                width: 100%;
-                height: 100%;
+                width: 100% !important;
+                height: 100% !important;
             }
 
             #bgVideo {
@@ -639,8 +656,10 @@
                 config.devicePixelRatio = 1;
             } else {
                 // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-                canvas.style.width = '1920px';
-                canvas.style.height = '1080px';
+                // コンテナに合わせてリサイズ（CSSでアスペクト比維持）
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                
                 // 高解像度モニター対策: ピクセル比を1に制限 (再適用)
                 config.devicePixelRatio = 1;
             }
