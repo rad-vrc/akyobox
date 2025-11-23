@@ -214,11 +214,6 @@
     </head>
     <body>
         <div id="overlay-ui">
-            <!-- デバッグ用ログ表示エリア -->
-            <div id="debug-log" style="position:fixed; left:12px; bottom:100px; color:#0f0; font-family:monospace; font-size:14px; background:rgba(0,0,0,0.8); padding:8px; pointer-events:none; z-index:9999; max-width:400px; border-radius:8px; display:block;">
-                Debug Log: Ready
-            </div>
-
             <div id="name-box">
                 <label for="playerName">Name</label>
                 <input id="playerName" maxlength="16" placeholder="Anonymous" />
@@ -260,18 +255,6 @@
             </div>
         </div>
         <script>
-            // ==========================================
-            // Debug Logger
-            // ==========================================
-            function uiLog(msg) {
-                console.log('[UI]', msg);
-                const el = document.getElementById('debug-log');
-                if (el) {
-                    const time = new Date().toLocaleTimeString();
-                    el.innerHTML = `[${time}] ${msg}<br>` + el.innerHTML;
-                }
-            }
-
             // ==========================================
             // Unity連携用: 背景動画制御関数
             // ==========================================
@@ -341,38 +324,17 @@
             }
 
             async function fetchHighscores() {
-                uiLog('Fetching highscores...');
                 try {
                     const res = await fetch(HIGHSCORE_ENDPOINT, { cache: 'no-store' });
                     if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        uiLog(`Fetch Error: ${res.status} ${errData.details || ''}`);
-                        console.error('Highscore fetch failed:', res.status, errData);
-                        document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Error: ${errData.details || res.statusText}</li>`;
+                        renderHighscores(null);
                         return;
                     }
-                    // デバッグ用レスポンス対応: { list: [...], debug: {...} }
-                    const data = await res.json();
-                    let list = [];
-                    if (Array.isArray(data)) {
-                        list = data; // 旧形式または配列で来た場合
-                    } else if (data && Array.isArray(data.list)) {
-                        list = data.list;
-                        console.log('Fetch Debug:', data.debug);
-                        uiLog(`Debug Raw: ${JSON.stringify(data.debug.rawMembers)}`);
-                        if (data.debug.debugErrors && data.debug.debugErrors.length > 0) {
-                             // エラー詳細と、もしあれば生データ(rawData)も表示
-                             const errs = data.debug.debugErrors.map(e => `${e.error} (val:${e.rawData})`).join(', ');
-                             uiLog(`Debug errs: ${errs}`);
-                        }
-                    }
-                    
-                    uiLog(`Fetched: ${list.length} scores`);
+                    const list = await res.json();
                     renderHighscores(list);
                 } catch (e) {
-                    uiLog(`Fetch Exception: ${e.message}`);
                     console.log('fetch highscores error', e);
-                    document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Connection Error</li>`;
+                    renderHighscores(null);
                 }
             }
 
@@ -412,29 +374,19 @@
             }
 
             async function submitScore(score, signature) {
-                uiLog(`SubmitScore called: ${score}`);
                 const name = getPlayerName();
                 const anonId = getAnonId();
                 lastPostedScore = score;
                 lastPostedName = name;
                 updateShareButton();
                 try {
-                    const res = await fetch(HIGHSCORE_ENDPOINT, {
+                    await fetch(HIGHSCORE_ENDPOINT, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name, score, signature, anonId }),
                     });
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        uiLog(`Submit Failed: ${res.status} ${err.details || ''}`);
-                    } else {
-                        const data = await res.json();
-                        console.log('Submit response:', data);
-                        uiLog(`Submit Success! zadd:${data.debug?.zaddResult}`);
-                        fetchHighscores();
-                    }
+                    fetchHighscores();
                 } catch (e) {
-                    uiLog(`Submit Exception: ${e.message}`);
                     console.log('submit score error', e);
                 }
             }
