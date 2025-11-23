@@ -47,7 +47,7 @@ export default function Home() {
                 <iframe
                     src="/games/whack-a-devilyagiakyo/index.html"
                     style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                    title="Whack-a-Akyo"
+                    title="激烈!!デビルヤギAkyo叩き"
                     allow="autoplay; fullscreen; vr"
                 />
             </div>
