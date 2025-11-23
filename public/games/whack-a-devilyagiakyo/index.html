@@ -413,7 +413,9 @@
                         const err = await res.json().catch(() => ({}));
                         uiLog(`Submit Failed: ${res.status} ${err.details || ''}`);
                     } else {
-                        uiLog('Submit Success!');
+                        const data = await res.json();
+                        console.log('Submit response:', data);
+                        uiLog(`Submit Success! zadd:${data.debug?.zaddResult}`);
                         fetchHighscores();
                     }
                 } catch (e) {
