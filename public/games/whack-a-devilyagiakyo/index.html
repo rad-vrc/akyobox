@@ -386,7 +386,7 @@
                 const anonId = getAnonId();
                 lastPostedScore = score;
                 lastPostedName = name;
-                
+
                 // 自己ベスト更新なら保存
                 if (score > myBestScore) {
                     myBestScore = score;
@@ -425,10 +425,10 @@
             function shareToX() {
                 const targetScore = Math.max(lastPostedScore, myBestScore);
                 if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
-                
+
                 const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
                 // ポータルサイトのトップページをシェア先にする
-                const url = 'https://akyobox.vercel.app';
+                const url = 'akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
