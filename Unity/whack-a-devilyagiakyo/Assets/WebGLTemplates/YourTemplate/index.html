@@ -386,7 +386,7 @@
                 const anonId = getAnonId();
                 lastPostedScore = score;
                 lastPostedName = name;
-                
+
                 // 自己ベスト更新なら保存
                 if (score > myBestScore) {
                     myBestScore = score;
@@ -425,10 +425,10 @@
             function shareToX() {
                 const targetScore = Math.max(lastPostedScore, myBestScore);
                 if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
-                
+
                 const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
                 // ポータルサイトのトップページをシェア先にする
-                const url = 'https://akyobox.vercel.app';
+                const url = 'akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
@@ -448,25 +448,25 @@
                 const isNew = video.getAttribute('data-current') !== tag;
                 const nonce = ++currentVideoNonce;
 
-                // ループ設定と onended は毎回同期する（属性も明示的に操作）
-                video.loop = loop === true;
+                // 確実にイベントリスナーをリセットするために onended プロパティを使用する
+                // (addEventListener だと過去のリスナーが残留する可能性があるため)
+                video.onended = null;
+
                 if (loop) {
+                    video.loop = true;
                     video.setAttribute('loop', 'true');
-                    video.onended = null;
                 } else {
+                    video.loop = false;
                     video.removeAttribute('loop');
-                    video.onended = null;
-                    video.addEventListener(
-                        'ended',
-                        () => {
-                            if (nonce !== currentVideoNonce) return;
-                            video.pause();
-                            if (typeof onEnd === 'function') {
-                                onEnd();
-                            }
-                        },
-                        { once: true }
-                    );
+                    // ループしない場合のみ、終了時のコールバックを設定
+                    video.onended = () => {
+                        // 別動画に切り替わった後なら無視
+                        if (nonce !== currentVideoNonce) return;
+                        video.pause();
+                        if (typeof onEnd === 'function') {
+                            onEnd();
+                        }
+                    };
                 }
 
                 // ソースが同じなら再ロードしない（意図しない巻き戻し防止）

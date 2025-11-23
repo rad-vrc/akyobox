@@ -23,7 +23,7 @@ export const metadata = {
         title: '激烈!!デビルヤギAkyo叩き',
         description:
             'PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！',
-        images: ['https://akyobox.vercel.app/apple-icon.png'],
+        images: ['https://akyobox.vercel.app/x-icon.png'],
     },
 };
 
