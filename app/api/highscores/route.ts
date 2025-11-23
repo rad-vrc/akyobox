@@ -1,6 +1,8 @@
 import { kv } from "@vercel/kv";
 import { NextRequest, NextResponse } from "next/server";
+
 export const runtime = "edge";
+export const dynamic = "force-dynamic"; // キャッシュ無効化（重要）
 
 type Entry = {
   name: string;
@@ -38,14 +40,11 @@ function sanitizeScore(raw: unknown): number | null {
 
 export async function GET() {
   try {
-    type RawMember = string | { member: unknown };
-
-    const rawMembers = (await kv.zrange(KEY, -LIMIT, -1, {
-      rev: true,
-    })) as RawMember[];
-
+    // rev: true でスコア降順（高い順）にソートされる
+    // 0 から LIMIT-1 (9) まで取得することでトップ10を取得
+    const rawMembers = await kv.zrange(KEY, 0, LIMIT - 1, { rev: true });
     const members = rawMembers
-      .map((m) => {
+      .map((m: unknown) => {
         if (typeof m === "string") return m;
         if (m && typeof m === "object" && "member" in m) {
           const val = (m as { member: unknown }).member;
@@ -69,9 +68,9 @@ export async function GET() {
     const parsed = entries.filter((e): e is Entry => !!e);
 
     return NextResponse.json(parsed);
-  } catch (err) {
+  } catch (err: any) {
     console.error("GET /api/highscores error", err);
-    return NextResponse.json({ error: "failed" }, { status: 500 });
+    return NextResponse.json({ error: "failed to fetch scores", details: err.message }, { status: 500 });
   }
 }
 

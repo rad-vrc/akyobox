@@ -327,14 +327,16 @@
                 try {
                     const res = await fetch(HIGHSCORE_ENDPOINT, { cache: 'no-store' });
                     if (!res.ok) {
-                        renderHighscores(null);
+                        const errData = await res.json().catch(() => ({}));
+                        console.error('Highscore fetch failed:', res.status, errData);
+                        document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Error: ${errData.details || res.statusText}</li>`;
                         return;
                     }
                     const list = await res.json();
                     renderHighscores(list);
                 } catch (e) {
                     console.log('fetch highscores error', e);
-                    renderHighscores(null);
+                    document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Connection Error</li>`;
                 }
             }
 
