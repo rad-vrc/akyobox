@@ -43,7 +43,7 @@ export default function Home() {
             >
                 <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>
                     Akyobox -
-                    重かったらブラウザの設定でハードウェア/グラフィックアクセラレーションを有効化してね！
+                    おもかったらブラウザのせっていでハードウェア/グラフィックアクセラレーションをONにしてね！
                 </h1>
             </header>
             <div style={{ flex: 1, background: '#000' }}>
