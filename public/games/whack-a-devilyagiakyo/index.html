@@ -390,7 +390,12 @@
                 // 自己ベスト更新なら保存
                 if (score > myBestScore) {
                     myBestScore = score;
-                    localStorage.setItem('myHighScore', myBestScore);
+                    try {
+                        localStorage.setItem('myHighScore', myBestScore);
+                    } catch (e) {
+                        // プライベートブラウズ等で保存できない場合は無視して進む
+                        console.warn('LocalStorage write failed:', e);
+                    }
                 }
                 updateShareButton();
 
