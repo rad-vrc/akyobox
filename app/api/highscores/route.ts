@@ -104,11 +104,11 @@ export async function POST(req: NextRequest) {
 
     const entry: Entry = { name, score, at: Date.now() };
     // ユーザー別に保存
-    await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
+    const hsetResult = await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
     // ソートセットにはユーザーキーのみをメンバーとして登録（重複を防ぐ）
-    await kv.zadd(KEY, { score: entry.score, member: key });
+    const zaddResult = await kv.zadd(KEY, { score: entry.score, member: key });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, debug: { key, name, score, hsetResult, zaddResult } });
   } catch (err: any) {
     console.error("POST /api/highscores error", err);
     return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
