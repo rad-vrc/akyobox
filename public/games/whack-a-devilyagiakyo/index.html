@@ -560,6 +560,18 @@
                 productName: 'whack-a-devilyagiakyo',
                 productVersion: '1.0',
                 showBanner: unityShowBanner,
+                // --------------------------------------------------
+                // GPU最適化設定
+                // --------------------------------------------------
+                webglContextAttributes: {
+                    // ディスクリートGPU（Radeon/GeForce等）の利用を優先させる
+                    powerPreference: "high-performance",
+                    // 描画バッファを保持しない（パフォーマンス向上）
+                    preserveDrawingBuffer: false,
+                    // アルファ（透明度）は背景動画のために必須だが、
+                    // 不要な場合は false にすると速くなる。今回は必須なので true (デフォルト)
+                    alpha: true
+                },
                 // errorHandler: function(err, url, line) {
                 //    alert("error " + err + " occurred at line " + line);
                 //    // Return 'true' if you handled this error and don't want Unity

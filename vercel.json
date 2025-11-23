@@ -1,50 +1,68 @@
 {
-  "outputDirectory": ".next",
-  "headers": [
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.data",
-      "headers": [
-        { "key": "Content-Type", "value": "application/octet-stream" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    },
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.data\\.br",
-      "headers": [
-        { "key": "Content-Type", "value": "application/octet-stream" },
-        { "key": "Content-Encoding", "value": "br" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    },
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.wasm",
-      "headers": [
-        { "key": "Content-Type", "value": "application/wasm" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    },
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.wasm\\.br",
-      "headers": [
-        { "key": "Content-Type", "value": "application/wasm" },
-        { "key": "Content-Encoding", "value": "br" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    },
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.js",
-      "headers": [
-        { "key": "Content-Type", "value": "application/javascript" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    },
-    {
-      "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.js\\.br",
-      "headers": [
-        { "key": "Content-Type", "value": "application/javascript" },
-        { "key": "Content-Encoding", "value": "br" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate, no-transform" }
-      ]
-    }
-  ]
+    "outputDirectory": ".next",
+    "headers": [
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.data",
+            "headers": [
+                { "key": "Content-Type", "value": "application/octet-stream" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        },
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.data\\.br",
+            "headers": [
+                { "key": "Content-Type", "value": "application/octet-stream" },
+                { "key": "Content-Encoding", "value": "br" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        },
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.wasm",
+            "headers": [
+                { "key": "Content-Type", "value": "application/wasm" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        },
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.wasm\\.br",
+            "headers": [
+                { "key": "Content-Type", "value": "application/wasm" },
+                { "key": "Content-Encoding", "value": "br" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        },
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.js",
+            "headers": [
+                { "key": "Content-Type", "value": "application/javascript" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        },
+        {
+            "source": "/games/whack-a-devilyagiakyo/Build/(.*)\\.js\\.br",
+            "headers": [
+                { "key": "Content-Type", "value": "application/javascript" },
+                { "key": "Content-Encoding", "value": "br" },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate, no-transform"
+                }
+            ]
+        }
+    ]
 }
