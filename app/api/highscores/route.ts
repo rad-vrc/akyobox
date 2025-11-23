@@ -113,30 +113,28 @@ export async function POST(req: NextRequest) {
 
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
-    const existingRaw = await kv.hget<string>(USER_HASH, key);
-    let existing: Entry | null = null;
-    if (existingRaw) {
-      try {
-        existing = JSON.parse(existingRaw) as Entry;
-      } catch {
-        existing = null;
-      }
-    }
-
-    if (existing && existing.score >= score) {
-      return NextResponse.json({ ok: true, kept: true });
-    }
-
+    
     const entry: Entry = { 
         name: String(name), 
         score: Number(score), 
         at: Date.now() 
     };
+
+    // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     const jsonVal = JSON.stringify(entry);
 
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     // キーに prefix をつける
     const detailKey = `detail:${key}`;
+
+    // 既存スコアを確認し、ハイスコア更新時のみ保存
+    const currentBest = await kv.get<Entry>(detailKey);
+    // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
+    // もし既存スコアの方が高ければ何もしない
+    if (currentBest && typeof currentBest === 'object' && 'score' in currentBest && Number(currentBest.score) >= score) {
+        return NextResponse.json({ ok: true, kept: true, debug: { msg: "Highscore not broken", old: currentBest.score, new: score } });
+    }
+
     await kv.set(detailKey, jsonVal);
     
     // ソートセットにはユーザーキーのみをメンバーとして登録
