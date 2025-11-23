@@ -1,4 +1,10 @@
 import type { Metadata } from 'next';
+import localFont from 'next/font/local';
+
+const oshigo = localFont({
+    src: '../public/fonts/oshigo.otf',
+    display: 'swap',
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://akyobox.vercel.app'),
@@ -35,7 +41,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="ja">
-            <body style={{ margin: 0, padding: 0, fontFamily: 'sans-serif' }}>{children}</body>
+            <body style={{ margin: 0, padding: 0 }} className={oshigo.className}>
+                {children}
+            </body>
         </html>
     );
 }

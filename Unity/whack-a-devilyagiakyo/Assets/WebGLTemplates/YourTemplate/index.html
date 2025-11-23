@@ -684,6 +684,24 @@
                     });
             };
 
+            // --------------------------------------------------
+            // Unityによるキーボード・マウス乗っ取り対策 (ズーム機能の保護)
+            // --------------------------------------------------
+            window.addEventListener('keydown', function(e) {
+                // Ctrl + [+, -, 0, =] のズーム操作をUnityに渡さない
+                if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0' || e.key === '=')) {
+                    e.stopImmediatePropagation();
+                    // preventDefault() は呼ばない（ブラウザにズーム処理をさせるため）
+                }
+            }, true); // captureフェーズで補足する
+
+            window.addEventListener('wheel', function(e) {
+                // Ctrl + ホイールスクロール（ズーム）をUnityに渡さない
+                if (e.ctrlKey) {
+                    e.stopImmediatePropagation();
+                }
+            }, { capture: true, passive: false });
+
             document.body.appendChild(script);
             attachNameInput();
             fetchHighscores();
