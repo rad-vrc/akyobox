@@ -327,14 +327,16 @@
                 try {
                     const res = await fetch(HIGHSCORE_ENDPOINT, { cache: 'no-store' });
                     if (!res.ok) {
-                        renderHighscores(null);
+                        const errData = await res.json().catch(() => ({}));
+                        console.error('Highscore fetch failed:', res.status, errData);
+                        document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Error: ${errData.details || res.statusText}</li>`;
                         return;
                     }
                     const list = await res.json();
                     renderHighscores(list);
                 } catch (e) {
                     console.log('fetch highscores error', e);
-                    renderHighscores(null);
+                    document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Connection Error</li>`;
                 }
             }
 
@@ -551,14 +553,22 @@
             var loaderUrl = buildUrl + '/whack-a-devilyagiakyo.loader.js';
             var config = {
                 arguments: [],
-                dataUrl: buildUrl + '/whack-a-devilyagiakyo.data',
-                frameworkUrl: buildUrl + '/whack-a-devilyagiakyo.framework.js',
-                codeUrl: buildUrl + '/whack-a-devilyagiakyo.wasm',
+                dataUrl: buildUrl + '/whack-a-devilyagiakyo.data.br',
+                frameworkUrl: buildUrl + '/whack-a-devilyagiakyo.framework.js.br',
+                codeUrl: buildUrl + '/whack-a-devilyagiakyo.wasm.br',
                 streamingAssetsUrl: 'StreamingAssets',
                 companyName: 'DefaultCompany',
                 productName: 'whack-a-devilyagiakyo',
                 productVersion: '1.0',
                 showBanner: unityShowBanner,
+                // --------------------------------------------------
+                // GPU最適化設定 (再適用)
+                // --------------------------------------------------
+                webglContextAttributes: {
+                    powerPreference: "high-performance",
+                    preserveDrawingBuffer: false,
+                    alpha: true
+                },
                 // errorHandler: function(err, url, line) {
                 //    alert("error " + err + " occurred at line " + line);
                 //    // Return 'true' if you handled this error and don't want Unity
@@ -600,6 +610,8 @@
                 // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
                 canvas.style.width = '1920px';
                 canvas.style.height = '1080px';
+                // 高解像度モニター対策: ピクセル比を1に制限 (再適用)
+                config.devicePixelRatio = 1;
             }
 
             document.querySelector('#unity-loading-bar').style.display = 'block';
