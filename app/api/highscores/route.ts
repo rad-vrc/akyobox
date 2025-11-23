@@ -60,13 +60,21 @@ export async function GET() {
           const raw = await kv.hget<string>(USER_HASH, member);
           if (!raw) {
               debugErrors.push({ member, error: "null raw" });
+              // データがないのにランキングにいるのはおかしいので、掃除する（自己修復）
+              await kv.zrem(KEY, member);
               return null;
           }
           return JSON.parse(raw) as Entry;
         } catch (e: any) {
-          // 生データもログに含めることで、"[object Object]" になっていないか確認
+          // データが壊れている（[object Object]など）場合
           const rawDebug = await kv.hget<string>(USER_HASH, member).catch(() => "fetch_failed");
           debugErrors.push({ member, error: e.message, rawData: rawDebug });
+          
+          // 自己修復: 壊れたデータは削除して、ランキングからも消す
+          if (rawDebug === "[object Object]" || e.message.includes("JSON")) {
+              await kv.hdel(USER_HASH, member);
+              await kv.zrem(KEY, member);
+          }
           return null;
         }
       })
@@ -119,13 +127,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, kept: true });
     }
 
-    const entry: Entry = { name, score, at: Date.now() };
-    // ユーザー別に保存
-    const hsetResult = await kv.hset(USER_HASH, { [key]: JSON.stringify(entry) });
-    // ソートセットにはユーザーキーのみをメンバーとして登録（重複を防ぐ）
+    const entry: Entry = { 
+        name: String(name), 
+        score: Number(score), 
+        at: Date.now() 
+    };
+    const jsonVal = JSON.stringify(entry);
+
+    // ユーザー別に保存 (明示的に文字列化された jsonVal を使う)
+    // [object Object] 化を防ぐため、念には念を入れて String() でラップ
+    const hsetResult = await kv.hset(USER_HASH, { [key]: String(jsonVal) });
+    // ソートセットにはユーザーキーのみをメンバーとして登録
     const zaddResult = await kv.zadd(KEY, { score: entry.score, member: key });
 
-    return NextResponse.json({ ok: true, debug: { key, name, score, hsetResult, zaddResult } });
+    return NextResponse.json({ ok: true, debug: { key, name, score, jsonValType: typeof jsonVal, jsonVal, hsetResult, zaddResult } });
   } catch (err: any) {
     console.error("POST /api/highscores error", err);
     return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
