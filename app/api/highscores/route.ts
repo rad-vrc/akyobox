@@ -54,27 +54,27 @@ export async function GET() {
       .filter((m) => m.length > 0);
 
     const debugErrors: any[] = [];
+    
+    // [Refactor] Hashではなく通常のGETを使う
     const entries = await Promise.all(
       members.map(async (member) => {
         try {
-          const raw = await kv.hget<string>(USER_HASH, member);
+          const detailKey = `detail:${member}`;
+          const raw = await kv.get<Entry>(detailKey); // Vercel KVのgetは自動でJSONパースしてくれる場合があるが、明示的に型指定
+          
           if (!raw) {
-              debugErrors.push({ member, error: "null raw" });
-              // データがないのにランキングにいるのはおかしいので、掃除する（自己修復）
+              debugErrors.push({ member, error: "null raw (key not found)", key: detailKey });
+              // ランキングにあるのにデータがない場合は掃除
               await kv.zrem(KEY, member);
               return null;
           }
-          return JSON.parse(raw) as Entry;
-        } catch (e: any) {
-          // データが壊れている（[object Object]など）場合
-          const rawDebug = await kv.hget<string>(USER_HASH, member).catch(() => "fetch_failed");
-          debugErrors.push({ member, error: e.message, rawData: rawDebug });
           
-          // 自己修復: 壊れたデータは削除して、ランキングからも消す
-          if (rawDebug === "[object Object]" || e.message.includes("JSON")) {
-              await kv.hdel(USER_HASH, member);
-              await kv.zrem(KEY, member);
-          }
+          // kv.get はオブジェクトをそのまま返すことがある（自動パース）
+          // 文字列が返ってきた場合のみ parse する
+          const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          return entry as Entry;
+        } catch (e: any) {
+          debugErrors.push({ member, error: e.message });
           return null;
         }
       })
@@ -134,13 +134,15 @@ export async function POST(req: NextRequest) {
     };
     const jsonVal = JSON.stringify(entry);
 
-    // ユーザー別に保存 (明示的に文字列化された jsonVal を使う)
-    // [object Object] 化を防ぐため、念には念を入れて String() でラップ
-    const hsetResult = await kv.hset(USER_HASH, { [key]: String(jsonVal) });
+    // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
+    // キーに prefix をつける
+    const detailKey = `detail:${key}`;
+    await kv.set(detailKey, jsonVal);
+    
     // ソートセットにはユーザーキーのみをメンバーとして登録
     const zaddResult = await kv.zadd(KEY, { score: entry.score, member: key });
 
-    return NextResponse.json({ ok: true, debug: { key, name, score, jsonValType: typeof jsonVal, jsonVal, hsetResult, zaddResult } });
+    return NextResponse.json({ ok: true, debug: { key, detailKey, name, score, jsonValType: typeof jsonVal, jsonVal, zaddResult } });
   } catch (err: any) {
     console.error("POST /api/highscores error", err);
     return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
