@@ -390,7 +390,12 @@
                 // 自己ベスト更新なら保存
                 if (score > myBestScore) {
                     myBestScore = score;
-                    localStorage.setItem('myHighScore', myBestScore);
+                    try {
+                        localStorage.setItem('myHighScore', myBestScore);
+                    } catch (e) {
+                        // プライベートブラウズ等で保存できない場合は無視して進む
+                        console.warn('LocalStorage write failed:', e);
+                    }
                 }
                 updateShareButton();
 
@@ -422,7 +427,8 @@
                 if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
                 
                 const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
-                const url = location.origin + '/games/whack-a-devilyagiakyo/';
+                // ポータルサイトのトップページをシェア先にする
+                const url = 'https://akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
