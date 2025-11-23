@@ -42,7 +42,7 @@ export default function Home() {
             >
                 <h1 style={{ margin: 0, fontSize: '1.7rem', letterSpacing: '1px' }}>
                     Akyobox -
-                    おもかったらブラウザのせっていでハードウェア/グラフィックアクセラレーションをONにしてね！がめんサイズはブラウザのせっていでかえられるよ！
+                    おもかったらブラウザのせっていでハードウェア/グラフィックアクセラレーションをONにしてね！がめんサイズもブラウザのせっていでかえられるよ！
                 </h1>
             </header>
             <div style={{ flex: 1, background: '#000' }}>
