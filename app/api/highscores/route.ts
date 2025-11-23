@@ -44,23 +44,27 @@ export async function GET() {
     // 0 から LIMIT-1 (9) まで取得することでトップ10を取得
     const rawMembers = await kv.zrange(KEY, 0, LIMIT - 1, { rev: true });
     const members = rawMembers
-      .map((m: unknown) => {
-        if (typeof m === "string") return m;
-        if (m && typeof m === "object" && "member" in m) {
-          const val = (m as { member: unknown }).member;
-          if (typeof val === "string") return val;
-        }
-        return "";
-      })
+      .map((m: unknown) =>
+        typeof m === "string"
+          ? m
+          : typeof m === "object" && m !== null && "member" in (m as any)
+          ? String((m as any).member)
+          : ""
+      )
       .filter((m) => m.length > 0);
 
+    const debugErrors: any[] = [];
     const entries = await Promise.all(
       members.map(async (member) => {
         try {
           const raw = await kv.hget<string>(USER_HASH, member);
-          if (!raw) return null;
+          if (!raw) {
+              debugErrors.push({ member, error: "null raw" });
+              return null;
+          }
           return JSON.parse(raw) as Entry;
-        } catch {
+        } catch (e: any) {
+          debugErrors.push({ member, error: e.message });
           return null;
         }
       })
@@ -72,6 +76,8 @@ export async function GET() {
         list: parsed,
         debug: {
             rawMembers,
+            members, // 抽出されたキー
+            debugErrors, // エラー詳細
             limit: LIMIT,
             key: KEY,
             userHashKey: USER_HASH
