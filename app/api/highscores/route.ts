@@ -137,6 +137,15 @@ export async function POST(req: NextRequest) {
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     // キーに prefix をつける
     const detailKey = `detail:${key}`;
+
+    // 既存スコアを確認し、ハイスコア更新時のみ保存
+    const existing = await kv.get<Entry>(detailKey);
+    // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
+    // もし既存スコアの方が高ければ何もしない
+    if (existing && typeof existing === 'object' && 'score' in existing && Number(existing.score) >= score) {
+        return NextResponse.json({ ok: true, kept: true, debug: { msg: "Highscore not broken", old: existing.score, new: score } });
+    }
+
     await kv.set(detailKey, jsonVal);
     
     // ソートセットにはユーザーキーのみをメンバーとして登録
