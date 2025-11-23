@@ -351,7 +351,17 @@
                         document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Error: ${errData.details || res.statusText}</li>`;
                         return;
                     }
-                    const list = await res.json();
+                    // デバッグ用レスポンス対応: { list: [...], debug: {...} }
+                    const data = await res.json();
+                    let list = [];
+                    if (Array.isArray(data)) {
+                        list = data; // 旧形式または配列で来た場合
+                    } else if (data && Array.isArray(data.list)) {
+                        list = data.list;
+                        console.log('Fetch Debug:', data.debug);
+                        uiLog(`Debug RawMembers: ${JSON.stringify(data.debug.rawMembers)}`);
+                    }
+                    
                     uiLog(`Fetched: ${list.length} scores`);
                     renderHighscores(list);
                 } catch (e) {
