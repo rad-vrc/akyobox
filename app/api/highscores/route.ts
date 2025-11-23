@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
     await kv.zadd(KEY, { score: entry.score, member: key });
 
     return NextResponse.json({ ok: true });
-  } catch (err) {
+  } catch (err: any) {
     console.error("POST /api/highscores error", err);
-    return NextResponse.json({ error: "failed" }, { status: 500 });
+    return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
   }
 }
