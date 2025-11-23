@@ -67,7 +67,16 @@ export async function GET() {
     );
     const parsed = entries.filter((e): e is Entry => !!e);
 
-    return NextResponse.json(parsed);
+    // デバッグ用に構造を変更して返す（一時的）
+    return NextResponse.json({
+        list: parsed,
+        debug: {
+            rawMembers,
+            limit: LIMIT,
+            key: KEY,
+            userHashKey: USER_HASH
+        }
+    });
   } catch (err: any) {
     console.error("GET /api/highscores error", err);
     return NextResponse.json({ error: "failed to fetch scores", details: err.message }, { status: 500 });
