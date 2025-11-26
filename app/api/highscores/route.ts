@@ -8,21 +8,22 @@ type Entry = {
   name: string;
   score: number;
   at: number;
+  anonId?: string; // ユーザー識別用（マスク済み）
 };
 
 const KEY = "highscores";
 const LIMIT = 10;
 const USER_HASH = "highscores-by-user";
 
-function userKey(name: string, anonId?: string) {
+function userKey(name: string, anonId?: string): string | null {
   // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
-  // これにより「名前変更」が可能になる
+  // これにより「名前変更」が可能になり、匿名ユーザー同士の衝突を防ぐ
   if (anonId && anonId.length > 0) {
       return `user:${anonId}`;
   }
-  // 万が一 anonId がない場合は古いロジック（またはエラー）
-  const lowered = name.toLowerCase();
-  return `name:${lowered}`;
+  // anonIdがない場合はnullを返す（登録拒否の判定に使用）
+  // これにより匿名ユーザー同士が同じキーを共有して上書きすることを防ぐ
+  return null;
 }
 
 function sanitizeName(raw: unknown): string {
@@ -46,21 +47,21 @@ export async function GET() {
     // rev: true でスコア降順（高い順）にソートされる
     // 0 から LIMIT-1 (9) まで取得することでトップ10を取得
     const rawMembers = await kv.zrange(KEY, 0, LIMIT - 1, { rev: true });
-    const members = rawMembers
+    const members: string[] = rawMembers
       .map((m: unknown) =>
         typeof m === "string"
           ? m
-          : typeof m === "object" && m !== null && "member" in (m as any)
-          ? String((m as any).member)
+          : typeof m === "object" && m !== null && "member" in (m as Record<string, unknown>)
+          ? String((m as Record<string, unknown>).member)
           : ""
       )
-      .filter((m) => m.length > 0);
+      .filter((m: string) => m.length > 0);
 
     const debugErrors: any[] = [];
     
     // [Refactor] Hashではなく通常のGETを使う
-    const entries = await Promise.all(
-      members.map(async (member) => {
+    const entries: (Entry | null)[] = await Promise.all(
+      members.map(async (member: string) => {
         try {
           const detailKey = `detail:${member}`;
           const raw = await kv.get<Entry>(detailKey); // Vercel KVのgetは自動でJSONパースしてくれる場合があるが、明示的に型指定
@@ -75,14 +76,23 @@ export async function GET() {
           // kv.get はオブジェクトをそのまま返すことがある（自動パース）
           // 文字列が返ってきた場合のみ parse する
           const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
-          return entry as Entry;
+          
+          // memberキーからanonIdを抽出してマスク（先頭8文字のみ公開）
+          // これによりクライアント側で自分のエントリを特定可能
+          let maskedAnonId: string | undefined;
+          if (member.startsWith('user:')) {
+            const fullId = member.slice(5); // 'user:' を除去
+            maskedAnonId = fullId.slice(0, 8); // 先頭8文字のみ（プライバシー保護）
+          }
+          
+          return { ...entry, anonId: maskedAnonId } as Entry;
         } catch (e: any) {
           debugErrors.push({ member, error: e.message });
           return null;
         }
       })
     );
-    const parsed = entries.filter((e): e is Entry => !!e);
+    const parsed: Entry[] = entries.filter((e: Entry | null): e is Entry => !!e);
 
     return NextResponse.json(parsed);
   } catch (err: any) {
@@ -105,6 +115,14 @@ export async function POST(req: NextRequest) {
 
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
+    
+    // anonIdがない場合はスコア登録を拒否（匿名ユーザー同士の上書き防止）
+    if (!key) {
+      return NextResponse.json({ 
+        error: "anonymous id required", 
+        details: "Please enable localStorage or use a supported browser" 
+      }, { status: 400 });
+    }
     
     const entry: Entry = { 
         name: String(name), 

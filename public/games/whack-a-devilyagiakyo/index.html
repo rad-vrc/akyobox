@@ -375,8 +375,9 @@
                 const ol = document.getElementById('rankingList');
                 if (!ol) return;
 
-                // 現在のプレイヤー名
-                const myName = getPlayerName();
+                // 自分のanonIdの先頭8文字（APIが返すマスク済みIDと比較するため）
+                const myAnonId = getAnonId();
+                const myMaskedId = myAnonId ? myAnonId.slice(0, 8) : null;
 
                 // サンプル表示か実データか
                 let display = [];
@@ -395,10 +396,12 @@
                     const dispName =
                         item && item.name && String(item.name).trim() ? item.name : 'Anonymous';
                     li.textContent = `${dispName} - ${item.score ?? 0}`;
+                    // anonIdで比較（名前ではなくユニークIDで判定）
+                    // これにより同じ名前の他人をハイライトしなくなる
                     if (
                         item &&
-                        typeof item.name === 'string' &&
-                        item.name.toLowerCase() === myName.toLowerCase()
+                        myMaskedId &&
+                        item.anonId === myMaskedId
                     ) {
                         li.classList.add('highlight');
                     }
