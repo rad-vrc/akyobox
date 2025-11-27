@@ -321,12 +321,23 @@
 
             function getAnonId() {
                 const key = 'playerAnonId';
-                let id = localStorage.getItem(key);
+                let id = null;
+                try {
+                    id = localStorage.getItem(key);
+                } catch (e) {
+                    // プライベートブラウズ等でlocalStorageが使えない場合
+                    console.warn('localStorage read failed:', e);
+                }
                 if (!id) {
                     id = crypto.randomUUID
                         ? crypto.randomUUID()
                         : Math.random().toString(36).slice(2, 10);
-                    localStorage.setItem(key, id);
+                    try {
+                        localStorage.setItem(key, id);
+                    } catch (e) {
+                        // 保存できない場合は無視（セッション中のみ有効なIDとして使用）
+                        console.warn('localStorage write failed:', e);
+                    }
                 }
                 return id;
             }
@@ -341,7 +352,11 @@
                 applyFont();
                 input.addEventListener('blur', applyFont);
                 input.addEventListener('change', () => {
-                    localStorage.setItem('playerName', getPlayerName());
+                    try {
+                        localStorage.setItem('playerName', getPlayerName());
+                    } catch (e) {
+                        console.warn('Failed to save player name:', e);
+                    }
                     applyFont();
                 });
                 
