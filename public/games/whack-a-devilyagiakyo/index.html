@@ -319,15 +319,36 @@
                 return val;
             }
 
+            // セッション中のanonIdをメモリにキャッシュ（localStorageが使えない場合のフォールバック）
+            let cachedAnonId = null;
+
             function getAnonId() {
+                // メモリキャッシュがあればそれを返す（localStorageが使えない環境でも一貫性を保つ）
+                if (cachedAnonId) {
+                    return cachedAnonId;
+                }
+
                 const key = 'playerAnonId';
-                let id = localStorage.getItem(key);
+                let id = null;
+                try {
+                    id = localStorage.getItem(key);
+                } catch (e) {
+                    // プライベートブラウズ等でlocalStorageが使えない場合
+                    console.warn('localStorage read failed:', e);
+                }
                 if (!id) {
                     id = crypto.randomUUID
                         ? crypto.randomUUID()
                         : Math.random().toString(36).slice(2, 10);
-                    localStorage.setItem(key, id);
+                    try {
+                        localStorage.setItem(key, id);
+                    } catch (e) {
+                        // 保存できない場合は無視（セッション中のみ有効なIDとして使用）
+                        console.warn('localStorage write failed:', e);
+                    }
                 }
+                // メモリにキャッシュ（セッション中は同じIDを返す）
+                cachedAnonId = id;
                 return id;
             }
             function attachNameInput() {
@@ -341,7 +362,11 @@
                 applyFont();
                 input.addEventListener('blur', applyFont);
                 input.addEventListener('change', () => {
-                    localStorage.setItem('playerName', getPlayerName());
+                    try {
+                        localStorage.setItem('playerName', getPlayerName());
+                    } catch (e) {
+                        console.warn('Failed to save player name:', e);
+                    }
                     applyFont();
                 });
                 
@@ -375,8 +400,9 @@
                 const ol = document.getElementById('rankingList');
                 if (!ol) return;
 
-                // 現在のプレイヤー名
-                const myName = getPlayerName();
+                // 自分のanonIdの先頭8文字（APIが返すマスク済みIDと比較するため）
+                const myAnonId = getAnonId();
+                const myMaskedId = myAnonId ? myAnonId.slice(0, 8) : null;
 
                 // サンプル表示か実データか
                 let display = [];
@@ -395,10 +421,12 @@
                     const dispName =
                         item && item.name && String(item.name).trim() ? item.name : 'Anonymous';
                     li.textContent = `${dispName} - ${item.score ?? 0}`;
+                    // anonIdで比較（名前ではなくユニークIDで判定）
+                    // これにより同じ名前の他人をハイライトしなくなる
                     if (
                         item &&
-                        typeof item.name === 'string' &&
-                        item.name.toLowerCase() === myName.toLowerCase()
+                        myMaskedId &&
+                        item.anonId === myMaskedId
                     ) {
                         li.classList.add('highlight');
                     }
