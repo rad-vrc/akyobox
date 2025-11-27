@@ -1,8 +1,8 @@
-import { kv } from "@vercel/kv";
-import { NextRequest, NextResponse } from "next/server";
+import { kv } from '@vercel/kv';
+import { NextRequest, NextResponse } from 'next/server';
 
-export const runtime = "edge";
-export const dynamic = "force-dynamic"; // キャッシュ無効化（重要）
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic'; // キャッシュ無効化（重要）
 
 type Entry = {
   name: string;
@@ -11,14 +11,14 @@ type Entry = {
   anonId?: string; // ユーザー識別用（マスク済み）
 };
 
-const KEY = "highscores";
+const KEY = 'highscores';
 const LIMIT = 10;
 
 function userKey(name: string, anonId?: string): string | null {
   // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
   // これにより「名前変更」が可能になり、匿名ユーザー同士の衝突を防ぐ
   if (anonId && anonId.length > 0) {
-      return `user:${anonId}`;
+    return `user:${anonId}`;
   }
   // anonIdがない場合はnullを返す（登録拒否の判定に使用）
   // これにより匿名ユーザー同士が同じキーを共有して上書きすることを防ぐ
@@ -26,17 +26,17 @@ function userKey(name: string, anonId?: string): string | null {
 }
 
 function sanitizeName(raw: unknown): string {
-  if (typeof raw !== "string") return "Anonymous";
-  const trimmed = raw.trim().replace(/\s+/g, " ");
+  if (typeof raw !== 'string') return 'Anonymous';
+  const trimmed = raw.trim().replace(/\s+/g, ' ');
   // remove angle brackets and control chars
   // eslint-disable-next-line no-control-regex
-  const cleaned = trimmed.replace(/[<>]/g, "").replace(/[\u0000-\u001F\u007F]/g, "");
-  if (!cleaned) return "Anonymous";
+  const cleaned = trimmed.replace(/[<>]/g, '').replace(/[\u0000-\u001F\u007F]/g, '');
+  if (!cleaned) return 'Anonymous';
   return cleaned.slice(0, 16);
 }
 
 function sanitizeScore(raw: unknown): number | null {
-  const n = typeof raw === "number" ? raw : Number(raw);
+  const n = typeof raw === 'number' ? raw : Number(raw);
   if (!Number.isFinite(n) || n < 0) return null;
   return Math.floor(n);
 }
@@ -48,34 +48,34 @@ export async function GET() {
     const rawMembers = await kv.zrange(KEY, 0, LIMIT - 1, { rev: true });
     const members: string[] = rawMembers
       .map((m: unknown) =>
-        typeof m === "string"
+        typeof m === 'string'
           ? m
-          : typeof m === "object" && m !== null && "member" in (m as Record<string, unknown>)
+          : typeof m === 'object' && m !== null && 'member' in (m as Record<string, unknown>)
           ? String((m as Record<string, unknown>).member)
-          : ""
+          : ''
       )
       .filter((m: string) => m.length > 0);
 
     const debugErrors: { member: string; error: string; key?: string }[] = [];
-    
+
     // [Refactor] Hashではなく通常のGETを使う
     const entries: (Entry | null)[] = await Promise.all(
       members.map(async (member: string) => {
         try {
           const detailKey = `detail:${member}`;
           const raw = await kv.get<Entry>(detailKey); // Vercel KVのgetは自動でJSONパースしてくれる場合があるが、明示的に型指定
-          
+
           if (!raw) {
-              debugErrors.push({ member, error: "null raw (key not found)", key: detailKey });
-              // ランキングにあるのにデータがない場合は掃除
-              await kv.zrem(KEY, member);
-              return null;
+            debugErrors.push({ member, error: 'null raw (key not found)', key: detailKey });
+            // ランキングにあるのにデータがない場合は掃除
+            await kv.zrem(KEY, member);
+            return null;
           }
-          
+
           // kv.get はオブジェクトをそのまま返すことがある（自動パース）
           // 文字列が返ってきた場合のみ parse する
           const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
-          
+
           // memberキーからanonIdを抽出してマスク（先頭8文字のみ公開）
           // これによりクライアント側で自分のエントリを特定可能
           let maskedAnonId: string | undefined;
@@ -83,7 +83,7 @@ export async function GET() {
             const fullId = member.slice(5); // 'user:' を除去
             maskedAnonId = fullId.slice(0, 8); // 先頭8文字のみ（プライバシー保護）
           }
-          
+
           return { ...entry, anonId: maskedAnonId } as Entry;
         } catch (e: unknown) {
           const errorMsg = e instanceof Error ? e.message : String(e);
@@ -97,8 +97,11 @@ export async function GET() {
     return NextResponse.json(parsed);
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    console.error("GET /api/highscores error", err);
-    return NextResponse.json({ error: "failed to fetch scores", details: errorMsg }, { status: 500 });
+    console.error('GET /api/highscores error', err);
+    return NextResponse.json(
+      { error: 'failed to fetch scores', details: errorMsg },
+      { status: 500 }
+    );
   }
 }
 
@@ -106,29 +109,31 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const name = sanitizeName(body?.name);
-    const anonIdRaw = typeof body?.anonId === "string" ? body.anonId : undefined;
-    const anonIdClean =
-      anonIdRaw?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32) || undefined;
+    const anonIdRaw = typeof body?.anonId === 'string' ? body.anonId : undefined;
+    const anonIdClean = anonIdRaw?.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32) || undefined;
     const score = sanitizeScore(body?.score);
     if (score === null) {
-      return NextResponse.json({ error: "invalid score" }, { status: 400 });
+      return NextResponse.json({ error: 'invalid score' }, { status: 400 });
     }
 
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
-    
+
     // anonIdがない場合はスコア登録を拒否（匿名ユーザー同士の上書き防止）
     if (!key) {
-      return NextResponse.json({ 
-        error: "anonymous id required", 
-        details: "Please enable localStorage or use a supported browser" 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'anonymous id required',
+          details: 'Please enable localStorage or use a supported browser',
+        },
+        { status: 400 }
+      );
     }
-    
-    const entry: Entry = { 
-        name: String(name), 
-        score: Number(score), 
-        at: Date.now() 
+
+    const entry: Entry = {
+      name: String(name),
+      score: Number(score),
+      at: Date.now(),
     };
 
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
@@ -141,53 +146,63 @@ export async function POST(req: NextRequest) {
     // 既存スコアを確認し、ハイスコア更新時のみ保存
     const currentBest = await kv.get<Entry>(detailKey);
     // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
-    
+
     let shouldUpdate = false;
     let finalScore = score;
     let finalAt = Date.now();
 
     if (currentBest && typeof currentBest === 'object' && 'score' in currentBest) {
-        const bestScore = Number(currentBest.score);
-        
-        if (score > bestScore) {
-            // ハイスコア更新！ -> 全更新
-            shouldUpdate = true;
-            finalScore = score;
-        } else if (currentBest.name !== name) {
-            // スコアは更新してないが、名前が変わった -> 名前だけ更新（スコアは維持）
-            shouldUpdate = true;
-            finalScore = bestScore; // 既存のベストスコアを維持
-            finalAt = currentBest.at; // 日時も維持（あるいは更新？まあ維持でよい）
-        } else {
-            // スコアも名前も更新なし -> 何もしない
-            return NextResponse.json({ ok: true, kept: true, debug: { msg: "No changes", old: bestScore, new: score } });
-        }
-    } else {
-        // 新規ユーザー -> 保存
+      const bestScore = Number(currentBest.score);
+
+      if (score > bestScore) {
+        // ハイスコア更新！ -> 全更新
         shouldUpdate = true;
+        finalScore = score;
+      } else if (currentBest.name !== name) {
+        // スコアは更新してないが、名前が変わった -> 名前だけ更新（スコアは維持）
+        shouldUpdate = true;
+        finalScore = bestScore; // 既存のベストスコアを維持
+        finalAt = currentBest.at; // 日時も維持（あるいは更新？まあ維持でよい）
+      } else {
+        // スコアも名前も更新なし -> 何もしない
+        return NextResponse.json({
+          ok: true,
+          kept: true,
+          debug: { msg: 'No changes', old: bestScore, new: score },
+        });
+      }
+    } else {
+      // 新規ユーザー -> 保存
+      shouldUpdate = true;
     }
 
     if (shouldUpdate) {
-        const entry: Entry = { 
-            name: String(name), 
-            score: Number(finalScore), 
-            at: finalAt
-        };
+      const entry: Entry = {
+        name: String(name),
+        score: Number(finalScore),
+        at: finalAt,
+      };
 
-        // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
-        const jsonVal = JSON.stringify(entry);
-        await kv.set(detailKey, jsonVal);
-        
-        // ソートセットにはユーザーキーのみをメンバーとして登録
-        const zaddResult = await kv.zadd(KEY, { score: finalScore, member: key });
+      // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
+      const jsonVal = JSON.stringify(entry);
+      await kv.set(detailKey, jsonVal);
 
-        return NextResponse.json({ ok: true, debug: { key, name, score: finalScore, updated: true } });
+      // ソートセットにはユーザーキーのみをメンバーとして登録
+      const zaddResult = await kv.zadd(KEY, { score: finalScore, member: key });
+
+      return NextResponse.json({
+        ok: true,
+        debug: { key, name, score: finalScore, updated: true },
+      });
     }
-    
+
     return NextResponse.json({ ok: true, ignored: true });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    console.error("POST /api/highscores error", err);
-    return NextResponse.json({ error: "failed to submit score", details: errorMsg }, { status: 500 });
+    console.error('POST /api/highscores error', err);
+    return NextResponse.json(
+      { error: 'failed to submit score', details: errorMsg },
+      { status: 500 }
+    );
   }
 }

@@ -1,743 +1,761 @@
 <!DOCTYPE html>
 <html lang="en-us">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Unity Web Player | whack-a-devilyagiakyo</title>
-        <meta property="og:title" content="激烈!!デビルヤギAkyo叩き" />
-        <meta
-            property="og:description"
-            content="PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！"
-        />
-        <meta property="og:image" content="https://akyobox.vercel.app/apple-icon.png" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://akyobox.vercel.app/games/whack-a-devilyagiakyo/" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="激烈!!デビルヤギAkyo叩き" />
-        <meta
-            name="twitter:description"
-            content="PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！"
-        />
-        <meta name="twitter:image" content="https://akyobox.vercel.app/apple-icon.png" />
-        <link rel="shortcut icon" href="TemplateData/favicon.ico" />
-        <link rel="stylesheet" href="TemplateData/style.css" />
-        <style>
-            @font-face {
-                font-family: 'Oshigo';
-                src: url('/fonts/oshigo.otf') format('opentype');
-                font-display: swap;
-            }
-        </style>
-        <!-- 先読みで動画の立ち上がりを速くする -->
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/title.mp4"
-            type="video/mp4"
-        />
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/game-bg.mp4"
-            type="video/mp4"
-        />
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/ending.mp4"
-            type="video/mp4"
-        />
-        <style>
-            html,
-            body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Unity Web Player | whack-a-devilyagiakyo</title>
+    <meta property="og:title" content="激烈!!デビルヤギAkyo叩き" />
+    <meta
+      property="og:description"
+      content="PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！"
+    />
+    <meta property="og:image" content="https://akyobox.vercel.app/apple-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://akyobox.vercel.app/games/whack-a-devilyagiakyo/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="激烈!!デビルヤギAkyo叩き" />
+    <meta
+      name="twitter:description"
+      content="PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！"
+    />
+    <meta name="twitter:image" content="https://akyobox.vercel.app/apple-icon.png" />
+    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+    <link rel="stylesheet" href="TemplateData/style.css" />
+    <style>
+      @font-face {
+        font-family: 'Oshigo';
+        src: url('/fonts/oshigo.otf') format('opentype');
+        font-display: swap;
+      }
+    </style>
+    <!-- 先読みで動画の立ち上がりを速くする -->
+    <link rel="preload" as="video" href="/games/whack-a-devilyagiakyo/title.mp4" type="video/mp4" />
+    <link
+      rel="preload"
+      as="video"
+      href="/games/whack-a-devilyagiakyo/game-bg.mp4"
+      type="video/mp4"
+    />
+    <link
+      rel="preload"
+      as="video"
+      href="/games/whack-a-devilyagiakyo/ending.mp4"
+      type="video/mp4"
+    />
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-            /* 背景動画をコンテナ内に閉じ、デスクトップは 1920x1080 で中央配置 */
-            #unity-container {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                
-                /* デフォルトは画面いっぱいに合わせつつアスペクト比16:9を維持 */
-                aspect-ratio: 16 / 9;
-                
-                background: transparent !important;
-                overflow: hidden;
-            }
+      /* 背景動画をコンテナ内に閉じ、デスクトップは 1920x1080 で中央配置 */
+      #unity-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
 
-            /* 画面が横長すぎる場合: 高さを基準に幅を決める */
-            @media (min-aspect-ratio: 16/9) {
-                #unity-container {
-                    height: 100vh;
-                    width: auto;
-                }
-            }
-            /* 画面が縦長すぎる場合: 幅を基準に高さを決める */
-            @media (max-aspect-ratio: 16/9) {
-                #unity-container {
-                    width: 100vw;
-                    height: auto;
-                }
-            }
+        /* デフォルトは画面いっぱいに合わせつつアスペクト比16:9を維持 */
+        aspect-ratio: 16 / 9;
 
-            /* モバイルは全画面フィル (強制) */
-            #unity-container.unity-mobile {
-                position: fixed;
-                left: 0;
-                top: 0;
-                transform: none;
-                width: 100% !important;
-                height: 100% !important;
-            }
+        background: transparent !important;
+        overflow: hidden;
+      }
 
-            #bgVideo {
-                position: absolute;
-                inset: 0;
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                z-index: 0; /* 最奥 */
-                pointer-events: none;
-            }
+      /* 画面が横長すぎる場合: 高さを基準に幅を決める */
+      @media (min-aspect-ratio: 16/9) {
+        #unity-container {
+          height: 100vh;
+          width: auto;
+        }
+      }
+      /* 画面が縦長すぎる場合: 幅を基準に高さを決める */
+      @media (max-aspect-ratio: 16/9) {
+        #unity-container {
+          width: 100vw;
+          height: auto;
+        }
+      }
 
-            canvas {
-                position: relative;
-                z-index: 1;
-                background: transparent !important;
-                width: 100%;
-                height: 100%;
-                display: block;
-            }
+      /* モバイルは全画面フィル (強制) */
+      #unity-container.unity-mobile {
+        position: fixed;
+        left: 0;
+        top: 0;
+        transform: none;
+        width: 100% !important;
+        height: 100% !important;
+      }
 
-            /* ランキング/名前入力オーバーレイ */
-            #overlay-ui {
-                position: fixed;
-                inset: 0;
-                pointer-events: none;
-                font-family: 'Oshigo', 'JetBrains Mono', monospace;
-                color: #f5f5f5;
-                z-index: 5;
-            }
+      #bgVideo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0; /* 最奥 */
+        pointer-events: none;
+      }
 
-            #name-box {
-                position: absolute;
-                top: 12px;
-                right: 12px;
-                pointer-events: auto;
-                background: rgba(0, 0, 0, 0.45);
-                padding: 24px 28px;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
+      canvas {
+        position: relative;
+        z-index: 1;
+        background: transparent !important;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
 
-            #name-box label {
-                width: 100%;
-                text-align: left;
-                font-size: 40px;
-                font-weight: 800;
-                letter-spacing: 1.2px;
-                line-height: 1.1;
-                display: block;
-                text-transform: none;
-            }
+      /* ランキング/名前入力オーバーレイ */
+      #overlay-ui {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        font-family: 'Oshigo', 'JetBrains Mono', monospace;
+        color: #f5f5f5;
+        z-index: 5;
+      }
 
-            #name-box input {
-                width: 420px;
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: #f5f5f5;
-                padding: 16px 20px;
-                border-radius: 12px;
-                font-size: 30px;
-            }
+      #name-box {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        pointer-events: auto;
+        background: rgba(0, 0, 0, 0.45);
+        padding: 24px 28px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
 
-            #ranking {
-                position: absolute;
-                left: 12px;
-                top: 12px;
-                pointer-events: auto;
-                background: rgba(0, 0, 0, 0.45);
-                padding: 28px 32px;
-                border-radius: 20px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                min-width: 520px;
-            }
+      #name-box label {
+        width: 100%;
+        text-align: left;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        line-height: 1.1;
+        display: block;
+        text-transform: none;
+      }
 
-            #ranking h4 {
-                margin: 0 0 6px 0;
-                font-size: 32px;
-                letter-spacing: 0.5px;
-            }
+      #name-box input {
+        width: 420px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #f5f5f5;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-size: 30px;
+      }
 
-            #ranking ol {
-                margin: 0;
-                padding-left: 16px;
-                font-size: 30px;
-            }
+      #ranking {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        pointer-events: auto;
+        background: rgba(0, 0, 0, 0.45);
+        padding: 28px 32px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        min-width: 520px;
+      }
 
-            #ranking li.highlight {
-                color: #ffd700;
-                font-weight: bold;
-                background: rgba(255, 215, 0, 0.1);
-                border-radius: 4px;
-                padding: 0 4px;
-            }
+      #ranking h2 {
+        margin: 0 0 6px 0;
+        font-size: 32px;
+        letter-spacing: 0.5px;
+      }
 
-            #share-button {
-                position: absolute;
-                left: 12px;
-                bottom: 12px;
-                pointer-events: auto;
-                display: inline-flex;
-                align-items: center;
-                gap: 16px;
-                padding: 24px 32px;
-                border-radius: 20px;
-                background: rgba(0, 0, 0, 0.55);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: #f5f5f5;
-                font-size: 32px;
-                font-family: 'Oshigo', 'JetBrains Mono', monospace;
-                text-decoration: none;
-                cursor: pointer;
-                transition: background 0.2s ease, border 0.2s ease;
-            }
+      #ranking ol {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 30px;
+      }
 
-            #share-button:disabled {
-                opacity: 0.4;
-                cursor: not-allowed;
-            }
+      #ranking li.highlight {
+        color: #ffd700;
+        font-weight: bold;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 4px;
+        padding: 0 4px;
+      }
 
-            #share-button:not(:disabled):hover {
-                background: rgba(255, 255, 255, 0.08);
-                border-color: rgba(255, 255, 255, 0.35);
-            }
+      #share-button {
+        position: absolute;
+        left: 12px;
+        bottom: 12px;
+        pointer-events: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 32px;
+        border-radius: 20px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #f5f5f5;
+        font-size: 32px;
+        font-family: 'Oshigo', 'JetBrains Mono', monospace;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s ease, border 0.2s ease;
+      }
 
-            #share-button svg {
-                width: 44px;
-                height: 44px;
-                fill: currentColor;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="overlay-ui">
-            <div id="name-box">
-                <label for="playerName">Name</label>
-                <input id="playerName" maxlength="16" placeholder="Anonymous" />
-            </div>
-            <div id="ranking">
-                <h4>TOP 10</h4>
-                <ol id="rankingList">
-                    <li>Loading...</li>
-                </ol>
-            </div>
-            <button id="share-button" type="button" disabled>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.97 6.817H1.68l7.73-8.833L1.17 2.25h5.117l4.713 6.183z"
-                    />
-                </svg>
-                ポスト
-            </button>
+      #share-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      #share-button:not(:disabled):hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.35);
+      }
+
+      #share-button svg {
+        width: 44px;
+        height: 44px;
+        fill: currentColor;
+      }
+
+      /* スクリーンリーダー専用：視覚的に非表示だがアクセシブル */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- スクリーンリーダー向け：視覚的に非表示のh1 -->
+    <h1 class="visually-hidden">激烈!!デビルヤギAkyo叩き - Unityミニゲーム</h1>
+    <div id="overlay-ui">
+      <div id="name-box">
+        <label for="playerName">Name</label>
+        <input id="playerName" maxlength="16" placeholder="Anonymous" />
+      </div>
+      <div id="ranking">
+        <h2>TOP 10</h2>
+        <ol id="rankingList">
+          <li>Loading...</li>
+        </ol>
+      </div>
+      <button id="share-button" type="button" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.97 6.817H1.68l7.73-8.833L1.17 2.25h5.117l4.713 6.183z"
+          />
+        </svg>
+        ポスト
+      </button>
+    </div>
+    <div id="unity-container" class="unity-desktop">
+      <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
+      <video id="bgVideo" preload="auto" playsinline muted autoplay crossorigin="anonymous">
+        <source src="/games/whack-a-devilyagiakyo/title.mp4" type="video/mp4" />
+        <!-- 背景動画のため字幕不要だが、アクセシビリティツール用に空trackを設置 -->
+        <track kind="captions" src="" label="No captions" default />
+        Your browser does not support HTML5 video.
+      </video>
+
+      <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-        <div id="unity-container" class="unity-desktop">
-            <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
-            <video id="bgVideo" preload="auto" playsinline muted autoplay crossorigin="anonymous">
-                <source src="/games/whack-a-devilyagiakyo/title.mp4" type="video/mp4" />
-                Your browser does not support HTML5 video.
-            </video>
+      </div>
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-logo-title-footer"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">whack-a-devilyagiakyo</div>
+      </div>
+    </div>
+    <script>
+      // ==========================================
+      // Unity連携用: 背景動画制御関数
+      // ==========================================
 
-            <canvas id="unity-canvas" width="1920" height="1080" tabindex="-1"></canvas>
-            <div id="unity-loading-bar">
-                <div id="unity-logo"></div>
-                <div id="unity-progress-bar-empty">
-                    <div id="unity-progress-bar-full"></div>
-                </div>
-            </div>
-            <div id="unity-warning"></div>
-            <div id="unity-footer">
-                <div id="unity-logo-title-footer"></div>
-                <div id="unity-fullscreen-button"></div>
-                <div id="unity-build-title">whack-a-devilyagiakyo</div>
-            </div>
-        </div>
-        <script>
-            // ==========================================
-            // Unity連携用: 背景動画制御関数
-            // ==========================================
+      // 動画ファイルのパス（ビルド後のフォルダ構成に合わせて調整してください）
+      const VIDEO_PATH_TITLE = '/games/whack-a-devilyagiakyo/title.mp4';
+      const VIDEO_PATH_GAME = '/games/whack-a-devilyagiakyo/game-bg.mp4';
+      const VIDEO_PATH_ENDING = '/games/whack-a-devilyagiakyo/ending.mp4';
+      let inputLocked = true;
+      const HIGHSCORE_ENDPOINT = '/api/highscores';
+      let lastPostedScore = 0;
+      let lastPostedName = 'Anonymous';
+      // ローカル保存された自己ベストを読み込む
+      let myBestScore = 0;
+      try {
+        const savedScore = localStorage.getItem('myHighScore');
+        if (savedScore) myBestScore = parseInt(savedScore, 10) || 0;
+      } catch (e) {}
 
-            // 動画ファイルのパス（ビルド後のフォルダ構成に合わせて調整してください）
-            const VIDEO_PATH_TITLE = '/games/whack-a-devilyagiakyo/title.mp4';
-            const VIDEO_PATH_GAME = '/games/whack-a-devilyagiakyo/game-bg.mp4';
-            const VIDEO_PATH_ENDING = '/games/whack-a-devilyagiakyo/ending.mp4';
-            let inputLocked = true;
-            const HIGHSCORE_ENDPOINT = '/api/highscores';
-            let lastPostedScore = 0;
-            let lastPostedName = 'Anonymous';
-            // ローカル保存された自己ベストを読み込む
-            let myBestScore = 0;
-            try {
-                const savedScore = localStorage.getItem('myHighScore');
-                if (savedScore) myBestScore = parseInt(savedScore, 10) || 0;
-            } catch(e) {}
+      // ==========================================
+      // Highscore & Name handling
+      // ==========================================
+      function sanitizeFrontName(raw) {
+        const collapsed = (raw || '')
+          .replace(/[<>]/g, '')
+          .replace(/[\x00-\x1F\x7F]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 16);
+        return collapsed || 'Anonymous';
+      }
 
-            // ==========================================
-            // Highscore & Name handling
-            // ==========================================
-            function sanitizeFrontName(raw) {
-                const collapsed = (raw || '')
-                    .replace(/[<>]/g, '')
-                    .replace(/[\x00-\x1F\x7F]/g, '')
-                    .replace(/\s+/g, ' ')
-                    .trim()
-                    .slice(0, 16);
-                return collapsed || 'Anonymous';
+      function loadPlayerName() {
+        const input = document.getElementById('playerName');
+        if (!input) return 'Anonymous';
+        const saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
+        input.value = saved;
+        return saved;
+      }
+
+      function getPlayerName() {
+        const input = document.getElementById('playerName');
+        if (!input) return 'Anonymous';
+        const val = sanitizeFrontName(input.value);
+        return val;
+      }
+
+      // セッション中のanonIdをメモリにキャッシュ（localStorageが使えない場合のフォールバック）
+      let cachedAnonId = null;
+
+      function getAnonId() {
+        // メモリキャッシュがあればそれを返す（localStorageが使えない環境でも一貫性を保つ）
+        if (cachedAnonId) {
+          return cachedAnonId;
+        }
+
+        const key = 'playerAnonId';
+        let id = null;
+        try {
+          id = localStorage.getItem(key);
+        } catch (e) {
+          // プライベートブラウズ等でlocalStorageが使えない場合
+          console.warn('localStorage read failed:', e);
+        }
+        if (!id) {
+          id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 10);
+          try {
+            localStorage.setItem(key, id);
+          } catch (e) {
+            // 保存できない場合は無視（セッション中のみ有効なIDとして使用）
+            console.warn('localStorage write failed:', e);
+          }
+        }
+        // メモリにキャッシュ（セッション中は同じIDを返す）
+        cachedAnonId = id;
+        return id;
+      }
+      function attachNameInput() {
+        const input = document.getElementById('playerName');
+        if (!input) return;
+        loadPlayerName();
+        // 入力終了時に推しゴで確定表示
+        const applyFont = () => {
+          input.style.fontFamily = '"Oshigo", "JetBrains Mono", monospace';
+        };
+        applyFont();
+        input.addEventListener('blur', applyFont);
+        input.addEventListener('change', () => {
+          try {
+            localStorage.setItem('playerName', getPlayerName());
+          } catch (e) {
+            console.warn('Failed to save player name:', e);
+          }
+          applyFont();
+        });
+
+        // Unityにキー入力を奪われないようにする（バックスペース等が効かなくなる対策）
+        input.addEventListener('keydown', (e) => {
+          e.stopPropagation();
+        });
+        input.addEventListener('keyup', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      async function fetchHighscores() {
+        try {
+          const res = await fetch(HIGHSCORE_ENDPOINT, { cache: 'no-store' });
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            console.error('Highscore fetch failed:', res.status, errData);
+            document.getElementById(
+              'rankingList'
+            ).innerHTML = `<li style="color:red; font-size:20px;">Error: ${
+              errData.details || res.statusText
+            }</li>`;
+            return;
+          }
+          const list = await res.json();
+          renderHighscores(list);
+        } catch (e) {
+          console.log('fetch highscores error', e);
+          document.getElementById(
+            'rankingList'
+          ).innerHTML = `<li style="color:red; font-size:20px;">Connection Error</li>`;
+        }
+      }
+
+      function renderHighscores(list) {
+        const ol = document.getElementById('rankingList');
+        if (!ol) return;
+
+        // 自分のanonIdの先頭8文字（APIが返すマスク済みIDと比較するため）
+        const myAnonId = getAnonId();
+        const myMaskedId = myAnonId ? myAnonId.slice(0, 8) : null;
+
+        // サンプル表示か実データか
+        let display = [];
+        if (Array.isArray(list) && list.length > 0) {
+          display = list;
+        }
+
+        ol.innerHTML = '';
+        if (display.length === 0) {
+          ol.innerHTML = '<li>No scores yet</li>';
+          return;
+        }
+
+        display.slice(0, 10).forEach((item) => {
+          const li = document.createElement('li');
+          const dispName = item && item.name && String(item.name).trim() ? item.name : 'Anonymous';
+          li.textContent = `${dispName} - ${item.score ?? 0}`;
+          // anonIdで比較（名前ではなくユニークIDで判定）
+          // これにより同じ名前の他人をハイライトしなくなる
+          if (item && myMaskedId && item.anonId === myMaskedId) {
+            li.classList.add('highlight');
+          }
+          ol.appendChild(li);
+        });
+      }
+
+      async function submitScore(score, signature) {
+        const name = getPlayerName();
+        const anonId = getAnonId();
+        lastPostedScore = score;
+        lastPostedName = name;
+
+        // 自己ベスト更新なら保存
+        if (score > myBestScore) {
+          myBestScore = score;
+          try {
+            localStorage.setItem('myHighScore', myBestScore);
+          } catch (e) {
+            // プライベートブラウズ等で保存できない場合は無視して進む
+            console.warn('LocalStorage write failed:', e);
+          }
+        }
+        updateShareButton();
+
+        try {
+          await fetch(HIGHSCORE_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, score, signature, anonId }),
+          });
+          fetchHighscores();
+        } catch (e) {
+          console.log('submit score error', e);
+        }
+      }
+
+      window.SubmitScore = submitScore;
+
+      function updateShareButton() {
+        const btn = document.getElementById('share-button');
+        if (!btn) return;
+        // 今回のスコア または 過去の自己ベスト があればボタン有効
+        const targetScore = Math.max(lastPostedScore, myBestScore);
+        const enabled = Number.isFinite(targetScore) && targetScore > 0;
+        btn.disabled = !enabled;
+      }
+
+      function shareToX() {
+        const targetScore = Math.max(lastPostedScore, myBestScore);
+        if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
+
+        const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
+        // ポータルサイトのトップページをシェア先にする
+        const url = 'akyobox.vercel.app';
+        const text = encodeURIComponent(scoreText);
+        const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
+          url
+        )}`;
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      }
+
+      function getVideoElement() {
+        return document.getElementById('bgVideo');
+      }
+
+      let currentVideoNonce = 0;
+
+      function swapVideo(src, loop, tag, onEnd) {
+        const video = getVideoElement();
+        if (!video) return;
+        const isNew = video.getAttribute('data-current') !== tag;
+        const nonce = ++currentVideoNonce;
+
+        // 確実にイベントリスナーをリセットするために onended プロパティを使用する
+        // (addEventListener だと過去のリスナーが残留する可能性があるため)
+        video.onended = null;
+
+        if (loop) {
+          video.loop = true;
+          video.setAttribute('loop', 'true');
+        } else {
+          video.loop = false;
+          video.removeAttribute('loop');
+          // ループしない場合のみ、終了時のコールバックを設定
+          video.onended = () => {
+            // 別動画に切り替わった後なら無視
+            if (nonce !== currentVideoNonce) return;
+            video.pause();
+            if (typeof onEnd === 'function') {
+              onEnd();
             }
+          };
+        }
 
-            function loadPlayerName() {
-                const input = document.getElementById('playerName');
-                if (!input) return 'Anonymous';
-                const saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
-                input.value = saved;
-                return saved;
-            }
+        // ソースが同じなら再ロードしない（意図しない巻き戻し防止）
+        if (!isNew) {
+          if (video.paused) {
+            video.play().catch((e) => console.log('Video play error:', e));
+          }
+          return;
+        }
 
-            function getPlayerName() {
-                const input = document.getElementById('playerName');
-                if (!input) return 'Anonymous';
-                const val = sanitizeFrontName(input.value);
-                return val;
-            }
+        video.pause();
+        video.setAttribute('data-current', tag);
+        video.src = src;
+        video.load(); // 非同期
 
-            // セッション中のanonIdをメモリにキャッシュ（localStorageが使えない場合のフォールバック）
-            let cachedAnonId = null;
+        const startPlayback = () => {
+          if (nonce !== currentVideoNonce) return;
+          video.currentTime = 0;
+          video.play().catch((e) => console.log('Video play error:', e));
+        };
 
-            function getAnonId() {
-                // メモリキャッシュがあればそれを返す（localStorageが使えない環境でも一貫性を保つ）
-                if (cachedAnonId) {
-                    return cachedAnonId;
-                }
+        // 既にキャッシュ済みなら即再生、そうでなければ canplay を1回だけ待つ
+        if (video.readyState >= 3) {
+          startPlayback();
+        } else {
+          video.addEventListener(
+            'canplay',
+            function handleCanPlay() {
+              startPlayback();
+            },
+            { once: true }
+          );
+        }
+      }
 
-                const key = 'playerAnonId';
-                let id = null;
-                try {
-                    id = localStorage.getItem(key);
-                } catch (e) {
-                    // プライベートブラウズ等でlocalStorageが使えない場合
-                    console.warn('localStorage read failed:', e);
-                }
-                if (!id) {
-                    id = crypto.randomUUID
-                        ? crypto.randomUUID()
-                        : Math.random().toString(36).slice(2, 10);
-                    try {
-                        localStorage.setItem(key, id);
-                    } catch (e) {
-                        // 保存できない場合は無視（セッション中のみ有効なIDとして使用）
-                        console.warn('localStorage write failed:', e);
-                    }
-                }
-                // メモリにキャッシュ（セッション中は同じIDを返す）
-                cachedAnonId = id;
-                return id;
-            }
-            function attachNameInput() {
-                const input = document.getElementById('playerName');
-                if (!input) return;
-                loadPlayerName();
-                // 入力終了時に推しゴで確定表示
-                const applyFont = () => {
-                    input.style.fontFamily = '"Oshigo", "JetBrains Mono", monospace';
-                };
-                applyFont();
-                input.addEventListener('blur', applyFont);
-                input.addEventListener('change', () => {
-                    try {
-                        localStorage.setItem('playerName', getPlayerName());
-                    } catch (e) {
-                        console.warn('Failed to save player name:', e);
-                    }
-                    applyFont();
-                });
-                
-                // Unityにキー入力を奪われないようにする（バックスペース等が効かなくなる対策）
-                input.addEventListener('keydown', (e) => {
-                    e.stopPropagation();
-                });
-                input.addEventListener('keyup', (e) => {
-                    e.stopPropagation();
-                });
-            }
+      // タイトル動画（ループ）
+      window.PlayTitleVideo = function () {
+        console.log('JS: PlayTitleVideo called');
+        swapVideo(VIDEO_PATH_TITLE, true, 'title');
+      };
 
-            async function fetchHighscores() {
-                try {
-                    const res = await fetch(HIGHSCORE_ENDPOINT, { cache: 'no-store' });
-                    if (!res.ok) {
-                        const errData = await res.json().catch(() => ({}));
-                        console.error('Highscore fetch failed:', res.status, errData);
-                        document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Error: ${errData.details || res.statusText}</li>`;
-                        return;
-                    }
-                    const list = await res.json();
-                    renderHighscores(list);
-                } catch (e) {
-                    console.log('fetch highscores error', e);
-                    document.getElementById('rankingList').innerHTML = `<li style="color:red; font-size:20px;">Connection Error</li>`;
-                }
-            }
+      // ゲーム本編動画（1回再生 or ループ）
+      window.PlayGameVideo = function () {
+        console.log('JS: PlayGameVideo called');
+        swapVideo(VIDEO_PATH_GAME, false, 'game');
+      };
 
-            function renderHighscores(list) {
-                const ol = document.getElementById('rankingList');
-                if (!ol) return;
+      // エンディング動画
+      window.PlayEndingVideo = function () {
+        console.log('JS: PlayEndingVideo called');
+        swapVideo(VIDEO_PATH_ENDING, false, 'ending', () => {
+          window.PlayTitleVideo();
+        });
+      };
 
-                // 自分のanonIdの先頭8文字（APIが返すマスク済みIDと比較するため）
-                const myAnonId = getAnonId();
-                const myMaskedId = myAnonId ? myAnonId.slice(0, 8) : null;
+      // 動画停止
+      window.StopVideo = function () {
+        var video = getVideoElement();
+        if (video) video.pause();
+      };
 
-                // サンプル表示か実データか
-                let display = [];
-                if (Array.isArray(list) && list.length > 0) {
-                    display = list;
-                }
+      // --------------------------------------------------
+      // 初回クリック吸収: タイトル再生中の誤タップでゲームが開始しないようにする
+      // --------------------------------------------------
+      function consumeFirstPointer(e) {
+        if (!inputLocked) return;
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        const video = getVideoElement();
+        if (video) {
+          video.play().catch(() => {});
+        }
+        inputLocked = false;
+        window.removeEventListener('pointerdown', consumeFirstPointer, true);
+      }
 
-                ol.innerHTML = '';
-                if (display.length === 0) {
-                    ol.innerHTML = '<li>No scores yet</li>';
-                    return;
-                }
+      window.addEventListener('pointerdown', consumeFirstPointer, true);
 
-                display.slice(0, 10).forEach((item) => {
-                    const li = document.createElement('li');
-                    const dispName =
-                        item && item.name && String(item.name).trim() ? item.name : 'Anonymous';
-                    li.textContent = `${dispName} - ${item.score ?? 0}`;
-                    // anonIdで比較（名前ではなくユニークIDで判定）
-                    // これにより同じ名前の他人をハイライトしなくなる
-                    if (
-                        item &&
-                        myMaskedId &&
-                        item.anonId === myMaskedId
-                    ) {
-                        li.classList.add('highlight');
-                    }
-                    ol.appendChild(li);
-                });
-            }
+      var canvas = document.querySelector('#unity-canvas');
 
-            async function submitScore(score, signature) {
-                const name = getPlayerName();
-                const anonId = getAnonId();
-                lastPostedScore = score;
-                lastPostedName = name;
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector('#unity-warning');
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function () {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
 
-                // 自己ベスト更新なら保存
-                if (score > myBestScore) {
-                    myBestScore = score;
-                    try {
-                        localStorage.setItem('myHighScore', myBestScore);
-                    } catch (e) {
-                        // プライベートブラウズ等で保存できない場合は無視して進む
-                        console.warn('LocalStorage write failed:', e);
-                    }
-                }
-                updateShareButton();
+      var buildUrl = 'Build';
+      var loaderUrl = buildUrl + '/whack-a-devilyagiakyo.loader.js';
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + '/whack-a-devilyagiakyo.data?v=brotli1',
+        frameworkUrl: buildUrl + '/whack-a-devilyagiakyo.framework.js?v=brotli1',
+        codeUrl: buildUrl + '/whack-a-devilyagiakyo.wasm?v=brotli1',
+        streamingAssetsUrl: 'StreamingAssets',
+        companyName: 'DefaultCompany',
+        productName: 'whack-a-devilyagiakyo',
+        productVersion: '1.0',
+        showBanner: unityShowBanner,
+        // --------------------------------------------------
+        // GPU最適化設定 (再適用)
+        // --------------------------------------------------
+        webglContextAttributes: {
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: false,
+          alpha: true,
+        },
+        // errorHandler: function(err, url, line) {
+        //    alert("error " + err + " occurred at line " + line);
+        //    // Return 'true' if you handled this error and don't want Unity
+        //    // to process it further, 'false' otherwise.
+        //    return true;
+        // },
+      };
 
-                try {
-                    await fetch(HIGHSCORE_ENDPOINT, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, score, signature, anonId }),
-                    });
-                    fetchHighscores();
-                } catch (e) {
-                    console.log('submit score error', e);
-                }
-            }
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
 
-            window.SubmitScore = submitScore;
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
 
-            function updateShareButton() {
-                const btn = document.getElementById('share-button');
-                if (!btn) return;
-                // 今回のスコア または 過去の自己ベスト があればボタン有効
-                const targetScore = Math.max(lastPostedScore, myBestScore);
-                const enabled = Number.isFinite(targetScore) && targetScore > 0;
-                btn.disabled = !enabled;
-            }
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
 
-            function shareToX() {
-                const targetScore = Math.max(lastPostedScore, myBestScore);
-                if (!(Number.isFinite(targetScore) && targetScore > 0)) return;
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content =
+          'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector('#unity-container').className = 'unity-mobile';
+        canvas.className = 'unity-mobile';
 
-                const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
-                // ポータルサイトのトップページをシェア先にする
-                const url = 'akyobox.vercel.app';
-                const text = encodeURIComponent(scoreText);
-                const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
-                    url
-                )}`;
-                window.open(shareUrl, '_blank', 'noopener,noreferrer');
-            }
+        // モバイル負荷軽減: デバイスピクセル比を1に固定して描画負荷を下げる
+        config.devicePixelRatio = 1;
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        // コンテナに合わせてリサイズ（CSSでアスペクト比維持）
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
 
-            function getVideoElement() {
-                return document.getElementById('bgVideo');
-            }
+        // 高解像度モニター対策: ピクセル比を1に制限 (再適用)
+        config.devicePixelRatio = 1;
+      }
 
-            let currentVideoNonce = 0;
+      document.querySelector('#unity-loading-bar').style.display = 'block';
 
-            function swapVideo(src, loop, tag, onEnd) {
-                const video = getVideoElement();
-                if (!video) return;
-                const isNew = video.getAttribute('data-current') !== tag;
-                const nonce = ++currentVideoNonce;
-
-                // 確実にイベントリスナーをリセットするために onended プロパティを使用する
-                // (addEventListener だと過去のリスナーが残留する可能性があるため)
-                video.onended = null;
-
-                if (loop) {
-                    video.loop = true;
-                    video.setAttribute('loop', 'true');
-                } else {
-                    video.loop = false;
-                    video.removeAttribute('loop');
-                    // ループしない場合のみ、終了時のコールバックを設定
-                    video.onended = () => {
-                        // 別動画に切り替わった後なら無視
-                        if (nonce !== currentVideoNonce) return;
-                        video.pause();
-                        if (typeof onEnd === 'function') {
-                            onEnd();
-                        }
-                    };
-                }
-
-                // ソースが同じなら再ロードしない（意図しない巻き戻し防止）
-                if (!isNew) {
-                    if (video.paused) {
-                        video.play().catch((e) => console.log('Video play error:', e));
-                    }
-                    return;
-                }
-
-                video.pause();
-                video.setAttribute('data-current', tag);
-                video.src = src;
-                video.load(); // 非同期
-
-                const startPlayback = () => {
-                    if (nonce !== currentVideoNonce) return;
-                    video.currentTime = 0;
-                    video.play().catch((e) => console.log('Video play error:', e));
-                };
-
-                // 既にキャッシュ済みなら即再生、そうでなければ canplay を1回だけ待つ
-                if (video.readyState >= 3) {
-                    startPlayback();
-                } else {
-                    video.addEventListener(
-                        'canplay',
-                        function handleCanPlay() {
-                            startPlayback();
-                        },
-                        { once: true }
-                    );
-                }
-            }
-
-            // タイトル動画（ループ）
-            window.PlayTitleVideo = function () {
-                console.log('JS: PlayTitleVideo called');
-                swapVideo(VIDEO_PATH_TITLE, true, 'title');
+      var script = document.createElement('script');
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector('#unity-progress-bar-full').style.width = 100 * progress + '%';
+        })
+          .then((unityInstance) => {
+            document.querySelector('#unity-loading-bar').style.display = 'none';
+            document.querySelector('#unity-fullscreen-button').onclick = () => {
+              unityInstance.SetFullscreen(1);
             };
+          })
+          .catch((message) => {
+            alert(message);
+          });
+      };
 
-            // ゲーム本編動画（1回再生 or ループ）
-            window.PlayGameVideo = function () {
-                console.log('JS: PlayGameVideo called');
-                swapVideo(VIDEO_PATH_GAME, false, 'game');
-            };
+      // --------------------------------------------------
+      // Unityによるキーボード・マウス乗っ取り対策 (ズーム機能の保護)
+      // --------------------------------------------------
+      window.addEventListener(
+        'keydown',
+        function (e) {
+          // Ctrl + [+, -, 0, =] のズーム操作をUnityに渡さない
+          if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0' || e.key === '=')) {
+            e.stopImmediatePropagation();
+            // preventDefault() は呼ばない（ブラウザにズーム処理をさせるため）
+          }
+        },
+        true
+      ); // captureフェーズで補足する
 
-            // エンディング動画
-            window.PlayEndingVideo = function () {
-                console.log('JS: PlayEndingVideo called');
-                swapVideo(VIDEO_PATH_ENDING, false, 'ending', () => {
-                    window.PlayTitleVideo();
-                });
-            };
+      window.addEventListener(
+        'wheel',
+        function (e) {
+          // Ctrl + ホイールスクロール（ズーム）をUnityに渡さない
+          if (e.ctrlKey) {
+            e.stopImmediatePropagation();
+          }
+        },
+        { capture: true, passive: false }
+      );
 
-            // 動画停止
-            window.StopVideo = function () {
-                var video = getVideoElement();
-                if (video) video.pause();
-            };
-
-            // --------------------------------------------------
-            // 初回クリック吸収: タイトル再生中の誤タップでゲームが開始しないようにする
-            // --------------------------------------------------
-            function consumeFirstPointer(e) {
-                if (!inputLocked) return;
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                const video = getVideoElement();
-                if (video) {
-                    video.play().catch(() => {});
-                }
-                inputLocked = false;
-                window.removeEventListener('pointerdown', consumeFirstPointer, true);
-            }
-
-            window.addEventListener('pointerdown', consumeFirstPointer, true);
-
-            var canvas = document.querySelector('#unity-canvas');
-
-            // Shows a temporary message banner/ribbon for a few seconds, or
-            // a permanent error message on top of the canvas if type=='error'.
-            // If type=='warning', a yellow highlight color is used.
-            // Modify or remove this function to customize the visually presented
-            // way that non-critical warnings and error messages are presented to the
-            // user.
-            function unityShowBanner(msg, type) {
-                var warningBanner = document.querySelector('#unity-warning');
-                function updateBannerVisibility() {
-                    warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-                }
-                var div = document.createElement('div');
-                div.innerHTML = msg;
-                warningBanner.appendChild(div);
-                if (type == 'error') div.style = 'background: red; padding: 10px;';
-                else {
-                    if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-                    setTimeout(function () {
-                        warningBanner.removeChild(div);
-                        updateBannerVisibility();
-                    }, 5000);
-                }
-                updateBannerVisibility();
-            }
-
-            var buildUrl = 'Build';
-            var loaderUrl = buildUrl + '/whack-a-devilyagiakyo.loader.js';
-            var config = {
-                arguments: [],
-                dataUrl: buildUrl + '/whack-a-devilyagiakyo.data?v=brotli1',
-                frameworkUrl: buildUrl + '/whack-a-devilyagiakyo.framework.js?v=brotli1',
-                codeUrl: buildUrl + '/whack-a-devilyagiakyo.wasm?v=brotli1',
-                streamingAssetsUrl: 'StreamingAssets',
-                companyName: 'DefaultCompany',
-                productName: 'whack-a-devilyagiakyo',
-                productVersion: '1.0',
-                showBanner: unityShowBanner,
-                // --------------------------------------------------
-                // GPU最適化設定 (再適用)
-                // --------------------------------------------------
-                webglContextAttributes: {
-                    powerPreference: "high-performance",
-                    preserveDrawingBuffer: false,
-                    alpha: true
-                },
-                // errorHandler: function(err, url, line) {
-                //    alert("error " + err + " occurred at line " + line);
-                //    // Return 'true' if you handled this error and don't want Unity
-                //    // to process it further, 'false' otherwise.
-                //    return true;
-                // },
-            };
-
-            // By default, Unity keeps WebGL canvas render target size matched with
-            // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-            // Set this to false if you want to decouple this synchronization from
-            // happening inside the engine, and you would instead like to size up
-            // the canvas DOM size and WebGL render target sizes yourself.
-            // config.matchWebGLToCanvasSize = false;
-
-            // If you would like all file writes inside Unity Application.persistentDataPath
-            // directory to automatically persist so that the contents are remembered when
-            // the user revisits the site the next time, uncomment the following line:
-            // config.autoSyncPersistentDataPath = true;
-            // This autosyncing is currently not the default behavior to avoid regressing
-            // existing user projects that might rely on the earlier manual
-            // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-            // expected to change.
-
-            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                // Mobile device style: fill the whole browser client area with the game canvas:
-
-                var meta = document.createElement('meta');
-                meta.name = 'viewport';
-                meta.content =
-                    'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-                document.getElementsByTagName('head')[0].appendChild(meta);
-                document.querySelector('#unity-container').className = 'unity-mobile';
-                canvas.className = 'unity-mobile';
-
-                // モバイル負荷軽減: デバイスピクセル比を1に固定して描画負荷を下げる
-                config.devicePixelRatio = 1;
-            } else {
-                // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-                // コンテナに合わせてリサイズ（CSSでアスペクト比維持）
-                canvas.style.width = '100%';
-                canvas.style.height = '100%';
-                
-                // 高解像度モニター対策: ピクセル比を1に制限 (再適用)
-                config.devicePixelRatio = 1;
-            }
-
-            document.querySelector('#unity-loading-bar').style.display = 'block';
-
-            var script = document.createElement('script');
-            script.src = loaderUrl;
-            script.onload = () => {
-                createUnityInstance(canvas, config, (progress) => {
-                    document.querySelector('#unity-progress-bar-full').style.width =
-                        100 * progress + '%';
-                })
-                    .then((unityInstance) => {
-                        document.querySelector('#unity-loading-bar').style.display = 'none';
-                        document.querySelector('#unity-fullscreen-button').onclick = () => {
-                            unityInstance.SetFullscreen(1);
-                        };
-                    })
-                    .catch((message) => {
-                        alert(message);
-                    });
-            };
-
-            // --------------------------------------------------
-            // Unityによるキーボード・マウス乗っ取り対策 (ズーム機能の保護)
-            // --------------------------------------------------
-            window.addEventListener('keydown', function(e) {
-                // Ctrl + [+, -, 0, =] のズーム操作をUnityに渡さない
-                if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0' || e.key === '=')) {
-                    e.stopImmediatePropagation();
-                    // preventDefault() は呼ばない（ブラウザにズーム処理をさせるため）
-                }
-            }, true); // captureフェーズで補足する
-
-            window.addEventListener('wheel', function(e) {
-                // Ctrl + ホイールスクロール（ズーム）をUnityに渡さない
-                if (e.ctrlKey) {
-                    e.stopImmediatePropagation();
-                }
-            }, { capture: true, passive: false });
-
-            document.body.appendChild(script);
-            attachNameInput();
-            fetchHighscores();
-            updateShareButton();
-            const shareBtn = document.getElementById('share-button');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', shareToX);
-            }
-        </script>
-    </body>
+      document.body.appendChild(script);
+      attachNameInput();
+      fetchHighscores();
+      updateShareButton();
+      const shareBtn = document.getElementById('share-button');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', shareToX);
+      }
+    </script>
+  </body>
 </html>
