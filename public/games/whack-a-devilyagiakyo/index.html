@@ -319,7 +319,15 @@
                 return val;
             }
 
+            // セッション中のanonIdをメモリにキャッシュ（localStorageが使えない場合のフォールバック）
+            let cachedAnonId = null;
+
             function getAnonId() {
+                // メモリキャッシュがあればそれを返す（localStorageが使えない環境でも一貫性を保つ）
+                if (cachedAnonId) {
+                    return cachedAnonId;
+                }
+
                 const key = 'playerAnonId';
                 let id = null;
                 try {
@@ -339,6 +347,8 @@
                         console.warn('localStorage write failed:', e);
                     }
                 }
+                // メモリにキャッシュ（セッション中は同じIDを返す）
+                cachedAnonId = id;
                 return id;
             }
             function attachNameInput() {
