@@ -13,7 +13,6 @@ type Entry = {
 
 const KEY = "highscores";
 const LIMIT = 10;
-const USER_HASH = "highscores-by-user";
 
 function userKey(name: string, anonId?: string): string | null {
   // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
@@ -57,7 +56,7 @@ export async function GET() {
       )
       .filter((m: string) => m.length > 0);
 
-    const debugErrors: any[] = [];
+    const debugErrors: { member: string; error: string; key?: string }[] = [];
     
     // [Refactor] Hashではなく通常のGETを使う
     const entries: (Entry | null)[] = await Promise.all(
@@ -86,8 +85,9 @@ export async function GET() {
           }
           
           return { ...entry, anonId: maskedAnonId } as Entry;
-        } catch (e: any) {
-          debugErrors.push({ member, error: e.message });
+        } catch (e: unknown) {
+          const errorMsg = e instanceof Error ? e.message : String(e);
+          debugErrors.push({ member, error: errorMsg });
           return null;
         }
       })
@@ -95,9 +95,10 @@ export async function GET() {
     const parsed: Entry[] = entries.filter((e: Entry | null): e is Entry => !!e);
 
     return NextResponse.json(parsed);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("GET /api/highscores error", err);
-    return NextResponse.json({ error: "failed to fetch scores", details: err.message }, { status: 500 });
+    return NextResponse.json({ error: "failed to fetch scores", details: errorMsg }, { status: 500 });
   }
 }
 
@@ -184,8 +185,9 @@ export async function POST(req: NextRequest) {
     }
     
     return NextResponse.json({ ok: true, ignored: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     console.error("POST /api/highscores error", err);
-    return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
+    return NextResponse.json({ error: "failed to submit score", details: errorMsg }, { status: 500 });
   }
 }
