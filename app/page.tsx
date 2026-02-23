@@ -38,7 +38,7 @@ const games: GameCard[] = [
         id: 'whack-a-devilyagiakyo',
         shortDescription: 'PCブラウザであそべるフリーAkyoミニゲーム。デビルヤギAkyoだけをたたいてハイスコアをねらおう！',
         href: '/games/whack-a-devilyagiakyo/',
-        image: '/games/whack-a-devilyagiakyo/x-icon.png',
+        image: '/apple-icon.png',
         imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
         statusLabel: 'こうかいちゅう',
         genre: 'Akyoたたき',

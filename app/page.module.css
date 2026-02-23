@@ -110,7 +110,7 @@
 
 .thumbnail {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1;
   background: #160806;
   border-bottom: 1px solid var(--panel-border);
 }
