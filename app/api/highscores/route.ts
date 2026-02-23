@@ -130,7 +130,18 @@ export async function POST(req: NextRequest) {
     const detailKey = `detail:${key}`;
 
     // 既存スコアを確認し、ハイスコア更新時のみ保存
-    const currentBest = await kv.get<Entry>(detailKey);
+    const currentBestRaw = await kv.get<Entry | string>(detailKey);
+    let currentBest: Entry | null = null;
+    if (currentBestRaw) {
+      try {
+        currentBest = typeof currentBestRaw === "string"
+          ? (JSON.parse(currentBestRaw) as Entry)
+          : currentBestRaw;
+      } catch {
+        // 破損データ時は新規扱いで上書きし、次回以降に正常化する
+        currentBest = null;
+      }
+    }
     // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
     
     let shouldUpdate = false;
