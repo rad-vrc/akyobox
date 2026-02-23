@@ -29,18 +29,18 @@ type GameCard = {
     href: string;
     image: string;
     imageAlt: string;
-    statusLabel: 'こうかいちゅう' | 'じゅんびちゅう';
+    statusLabel: 'こうかいちゅう';
     genre: string;
     playTime: string;
 };
 
-const liveGames: GameCard[] = [
+const games: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
         title: 'デビルヤギ Akyo たたき',
         shortDescription: 'デビルヤギ Akyo だけを たたく もぐらたたき。',
         href: '/games/whack-a-devilyagiakyo/',
-        image: '/games/whack-a-devilyagiakyo/card-image.webp',
+        image: '/games/whack-a-devilyagiakyo/x-icon.png',
         imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
         statusLabel: 'こうかいちゅう',
         genre: 'アクション',
@@ -48,62 +48,9 @@ const liveGames: GameCard[] = [
     },
 ];
 
-const comingSoonGames: GameCard[] = [
-    {
-        id: 'coming-soon-slot-1',
-        title: 'Next Game',
-        shortDescription: 'じゅんびちゅう の げーむ すろっと です。',
-        href: '#',
-        image: '/games/coming-soon.webp',
-        imageAlt: 'じゅんびちゅう げーむ の ぷれーすほるだー',
-        statusLabel: 'じゅんびちゅう',
-        genre: 'TBD',
-        playTime: 'TBD',
-    },
-    {
-        id: 'coming-soon-slot-2',
-        title: 'Another Slot',
-        shortDescription: 'ここに つぎの げーむ を ついか できます。',
-        href: '#',
-        image: '/games/coming-soon.webp',
-        imageAlt: 'じゅんびちゅう げーむ の ぷれーすほるだー',
-        statusLabel: 'じゅんびちゅう',
-        genre: 'TBD',
-        playTime: 'TBD',
-    },
-];
-
-function GameCardView({ game, disabled }: { game: GameCard; disabled?: boolean }) {
-    const cardClassName = disabled ? `${styles.card} ${styles.cardDisabled}` : styles.card;
-
-    if (disabled) {
-        return (
-            <article className={cardClassName} aria-disabled="true">
-                <div className={styles.thumbnail}>
-                    <Image src={game.image} alt={game.imageAlt} fill sizes="(max-width: 900px) 100vw, 33vw" />
-                    <span className={styles.badgeMuted}>{game.statusLabel}</span>
-                </div>
-                <div className={styles.cardBody}>
-                    <h3 className={styles.cardTitle}>{game.title}</h3>
-                    <p className={styles.cardDescription}>{game.shortDescription}</p>
-                    <dl className={styles.metaList}>
-                        <div>
-                            <dt>ジャンル</dt>
-                            <dd>{game.genre}</dd>
-                        </div>
-                        <div>
-                            <dt>ぷれいじかん</dt>
-                            <dd>{game.playTime}</dd>
-                        </div>
-                    </dl>
-                    <span className={styles.disabledButton}>じゅんびちゅう</span>
-                </div>
-            </article>
-        );
-    }
-
+function GameCardView({ game }: { game: GameCard }) {
     return (
-        <article className={cardClassName}>
+        <article className={styles.card}>
             <div className={styles.thumbnail}>
                 <Image src={game.image} alt={game.imageAlt} fill sizes="(max-width: 900px) 100vw, 33vw" />
                 <span className={styles.badgeLive}>{game.statusLabel}</span>
@@ -140,23 +87,11 @@ export default function Home() {
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <h2>こうかいちゅう げーむ</h2>
-                        <p>{liveGames.length} title</p>
+                        <p>{games.length} title</p>
                     </div>
                     <div className={styles.cardGrid}>
-                        {liveGames.map((game) => (
+                        {games.map((game) => (
                             <GameCardView key={game.id} game={game} />
-                        ))}
-                    </div>
-                </section>
-
-                <section className={styles.section}>
-                    <div className={styles.sectionHeader}>
-                        <h2>じゅんびちゅう</h2>
-                        <p>{comingSoonGames.length} slot</p>
-                    </div>
-                    <div className={styles.cardGrid}>
-                        {comingSoonGames.map((game) => (
-                            <GameCardView key={game.id} game={game} disabled />
                         ))}
                     </div>
                 </section>
