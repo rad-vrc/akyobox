@@ -28,7 +28,6 @@ type GameCard = {
     href: string;
     image: string;
     imageAlt: string;
-    statusLabel: 'こうかいちゅう';
     genre: string;
     playTime: string;
 };
@@ -40,7 +39,6 @@ const games: GameCard[] = [
         href: '/games/whack-a-devilyagiakyo/',
         image: '/apple-icon.png',
         imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
-        statusLabel: 'こうかいちゅう',
         genre: 'Akyoたたき',
         playTime: '1min',
     },
@@ -51,7 +49,6 @@ function GameCardView({ game }: { game: GameCard }) {
         <article className={styles.card}>
             <div className={styles.thumbnail}>
                 <Image src={game.image} alt={game.imageAlt} fill sizes="(max-width: 900px) 100vw, 33vw" />
-                <span className={styles.badgeLive}>{game.statusLabel}</span>
             </div>
             <div className={styles.cardBody}>
                 <p className={styles.cardDescription}>{game.shortDescription}</p>

@@ -119,22 +119,6 @@
   object-fit: contain;
 }
 
-.badgeLive {
-  position: absolute;
-  top: 0.65rem;
-  left: 0.65rem;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  letter-spacing: 0.06em;
-  padding: 0.3rem 0.6rem;
-  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
-}
-
-.badgeLive {
-  background: rgba(17, 89, 84, 0.92);
-  color: #f8fffe;
-}
-
 .cardBody {
   padding: 0.82rem 0.85rem 0.9rem;
   display: flex;
