@@ -24,7 +24,6 @@ export const metadata = {
 
 type GameCard = {
     id: string;
-    title: string;
     shortDescription: string;
     href: string;
     image: string;
@@ -37,14 +36,13 @@ type GameCard = {
 const games: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
-        title: 'デビルヤギ Akyo たたき',
-        shortDescription: 'デビルヤギ Akyo だけを たたく もぐらたたき。',
+        shortDescription: 'PCブラウザであそべるフリーAkyoミニゲーム。デビルヤギAkyoだけをたたいてハイスコアをねらおう！',
         href: '/games/whack-a-devilyagiakyo/',
         image: '/games/whack-a-devilyagiakyo/x-icon.png',
         imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
         statusLabel: 'こうかいちゅう',
-        genre: 'アクション',
-        playTime: '1ぷん',
+        genre: 'Akyoたたき',
+        playTime: '1min',
     },
 ];
 
@@ -56,7 +54,6 @@ function GameCardView({ game }: { game: GameCard }) {
                 <span className={styles.badgeLive}>{game.statusLabel}</span>
             </div>
             <div className={styles.cardBody}>
-                <h3 className={styles.cardTitle}>{game.title}</h3>
                 <p className={styles.cardDescription}>{game.shortDescription}</p>
                 <dl className={styles.metaList}>
                     <div>
@@ -64,12 +61,12 @@ function GameCardView({ game }: { game: GameCard }) {
                         <dd>{game.genre}</dd>
                     </div>
                     <div>
-                        <dt>ぷれいじかん</dt>
+                        <dt>プレイじかん</dt>
                         <dd>{game.playTime}</dd>
                     </div>
                 </dl>
                 <Link href={game.href} className={styles.playButton}>
-                    PLAY
+                    プレイする
                 </Link>
             </div>
         </article>
@@ -86,8 +83,7 @@ export default function Home() {
 
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
-                        <h2>こうかいちゅう げーむ</h2>
-                        <p>{games.length} title</p>
+                        <h2>こうかいちゅう</h2>
                     </div>
                     <div className={styles.cardGrid}>
                         {games.map((game) => (

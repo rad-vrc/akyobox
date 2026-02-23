@@ -61,7 +61,7 @@
 .sectionHeader {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 1rem;
   margin: 0 0 0.55rem;
 }
@@ -74,19 +74,11 @@
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
 }
 
-.sectionHeader p {
-  margin: 0;
-  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  color: rgba(255, 228, 203, 0.82);
-  text-transform: uppercase;
-}
-
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
   gap: 0.9rem;
+  justify-content: start;
 }
 
 .card {
@@ -118,13 +110,13 @@
 
 .thumbnail {
   position: relative;
-  aspect-ratio: 1 / 1;
-  background: var(--tile);
+  aspect-ratio: 16 / 9;
+  background: #160806;
   border-bottom: 1px solid var(--panel-border);
 }
 
 .thumbnail img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .badgeLive {
@@ -151,19 +143,12 @@
   height: 100%;
 }
 
-.cardTitle {
-  margin: 0;
-  font-size: 1.06rem;
-  line-height: 1.35;
-}
-
 .cardDescription {
   margin: 0;
-  color: var(--muted);
-  font-family: "Source Serif Pro", "Yu Mincho", serif;
+  color: #2c2c26;
+  font-family: inherit;
   line-height: 1.55;
   font-size: 0.94rem;
-  min-height: 2.9em;
 }
 
 .metaList {
@@ -193,7 +178,7 @@
 }
 
 .metaList dd {
-  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-family: inherit;
   font-weight: 600;
 }
 
@@ -201,7 +186,7 @@
   margin-top: auto;
   border-radius: 11px;
   text-align: center;
-  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-family: inherit;
   font-size: 0.9rem;
   letter-spacing: 0.04em;
   text-decoration: none;
@@ -222,7 +207,7 @@
 
 @media (max-width: 980px) {
   .cardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 360px);
   }
 }
 
