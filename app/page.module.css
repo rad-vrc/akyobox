@@ -1,0 +1,284 @@
+.page {
+  --bg: #f5f4ef;
+  --panel: #fdfcf8;
+  --panel-border: #d6d3c8;
+  --ink: #1c1d1a;
+  --muted: #596058;
+  --accent: #186d67;
+  --accent-strong: #115954;
+  --tile: #f0eee4;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  position: relative;
+  overflow-x: clip;
+}
+
+.page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Ccircle cx='1.5' cy='1.5' r='1.2' fill='%23d8d4ca'/%3E%3C/svg%3E");
+  background-size: 26px 26px;
+  opacity: 0.55;
+}
+
+.container {
+  width: min(1180px, 100% - 2rem);
+  margin: 0 auto;
+  padding: 2rem 0 3.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 22px;
+  padding: clamp(1.2rem, 2.2vw, 2rem);
+  box-shadow: 0 20px 35px rgba(30, 36, 30, 0.08);
+  animation: fadeSlideUp 420ms ease-out both;
+}
+
+.brandLabel {
+  margin: 0;
+  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.heroTitle {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.6rem, 3.6vw, 2.45rem);
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+}
+
+.heroLead {
+  margin: 0.85rem 0 0;
+  max-width: 66ch;
+  font-family: "Source Serif Pro", "Yu Mincho", serif;
+  font-size: clamp(0.96rem, 1.8vw, 1.08rem);
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.section {
+  margin-top: 1.35rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.65rem;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  letter-spacing: 0.01em;
+}
+
+.sectionHeader p {
+  margin: 0;
+  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  overflow: clip;
+  box-shadow: 0 14px 24px rgba(26, 36, 32, 0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  animation: fadeSlideUp 420ms ease-out both;
+  transition: transform 260ms ease-out, box-shadow 260ms ease-out, border-color 260ms ease-out;
+}
+
+.card:nth-child(2) {
+  animation-delay: 55ms;
+}
+
+.card:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 20px 34px rgba(26, 36, 32, 0.11);
+  border-color: #c7c3b7;
+}
+
+.cardDisabled {
+  opacity: 0.92;
+}
+
+.cardDisabled:hover {
+  transform: none;
+}
+
+.thumbnail {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--tile);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.thumbnail img {
+  object-fit: cover;
+}
+
+.badgeLive,
+.badgeMuted {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.6rem;
+  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+}
+
+.badgeLive {
+  background: rgba(17, 89, 84, 0.92);
+  color: #f8fffe;
+}
+
+.badgeMuted {
+  background: rgba(68, 72, 67, 0.9);
+  color: #f5f4ef;
+}
+
+.cardBody {
+  padding: 0.82rem 0.85rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  height: 100%;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.06rem;
+  line-height: 1.35;
+}
+
+.cardDescription {
+  margin: 0;
+  color: var(--muted);
+  font-family: "Source Serif Pro", "Yu Mincho", serif;
+  line-height: 1.55;
+  font-size: 0.94rem;
+  min-height: 2.9em;
+}
+
+.metaList {
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+  border: 1px dashed #cbc7bb;
+  border-radius: 12px;
+  padding: 0.55rem 0.6rem;
+  background: #f8f7f3;
+}
+
+.metaList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.metaList dt,
+.metaList dd {
+  margin: 0;
+  font-size: 0.83rem;
+}
+
+.metaList dt {
+  color: var(--muted);
+}
+
+.metaList dd {
+  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-weight: 600;
+}
+
+.playButton,
+.disabledButton {
+  margin-top: auto;
+  border-radius: 11px;
+  text-align: center;
+  font-family: "DM Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  padding: 0.66rem 0.85rem;
+}
+
+.playButton {
+  color: #f5fffc;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  transition: background-color 300ms ease-out, transform 230ms ease-out;
+}
+
+.playButton:hover {
+  background: var(--accent-strong);
+  transform: scale(1.03);
+}
+
+.disabledButton {
+  color: #697066;
+  background: #ece9de;
+  border: 1px solid #d2cebf;
+}
+
+@media (max-width: 980px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .container {
+    width: min(100% - 1rem, 620px);
+    padding-top: 1rem;
+  }
+
+  .hero {
+    border-radius: 16px;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
