@@ -134,9 +134,7 @@ export default function Home() {
         <main className={styles.page}>
             <div className={styles.container}>
                 <header className={styles.hero}>
-                    <p className={styles.brandLabel}>AKYOBOX PORTAL</p>
                     <h1 className={styles.heroTitle}>Akyobox</h1>
-                    <p className={styles.heroLead}>げーむ を えらんで すぐ ぷれい。</p>
                 </header>
 
                 <section className={styles.section}>
