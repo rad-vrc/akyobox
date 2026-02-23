@@ -3,10 +3,10 @@ import Link from 'next/link';
 import styles from './page.module.css';
 
 export const metadata = {
-    title: 'Akyobox | ゲームポータル',
+    title: 'Akyobox - VRChatアバター Akyoゲームポータル',
     description: 'Akyoboxのゲームポータル。公開中のゲームを一覧から選んでそのままプレイできます。',
     openGraph: {
-        title: 'Akyobox | ゲームポータル',
+        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
         description: 'Akyoboxのゲームポータル。公開中のゲームを一覧から選んでそのままプレイできます。',
         url: 'https://akyobox.vercel.app/',
         siteName: 'Akyobox',
@@ -29,7 +29,7 @@ type GameCard = {
     href: string;
     image: string;
     imageAlt: string;
-    statusLabel: '公開中' | '準備中';
+    statusLabel: 'こうかいちゅう' | 'じゅんびちゅう';
     genre: string;
     playTime: string;
 };
@@ -37,14 +37,14 @@ type GameCard = {
 const liveGames: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
-        title: '激烈!!デビルヤギAkyo叩き',
-        shortDescription: 'デビルヤギAkyoだけを見極めて叩くハイスピードもぐらたたき。',
+        title: 'デビルヤギ Akyo たたき',
+        shortDescription: 'デビルヤギ Akyo だけを たたく もぐらたたき。',
         href: '/games/whack-a-devilyagiakyo/',
-        image: '/games/whack-a-devilyagiakyo/TemplateData/bg.png',
-        imageAlt: '激烈!!デビルヤギAkyo叩きのゲームイメージ',
-        statusLabel: '公開中',
+        image: '/games/whack-a-devilyagiakyo/card-image.webp',
+        imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
+        statusLabel: 'こうかいちゅう',
         genre: 'アクション',
-        playTime: '1プレイ 1-3分',
+        playTime: '1ぷん',
     },
 ];
 
@@ -52,22 +52,22 @@ const comingSoonGames: GameCard[] = [
     {
         id: 'coming-soon-slot-1',
         title: 'Next Game',
-        shortDescription: '次回公開予定のゲームスロットです。',
+        shortDescription: 'じゅんびちゅう の げーむ すろっと です。',
         href: '#',
-        image: '/apple-icon.png',
-        imageAlt: '次回公開予定ゲームのプレースホルダー',
-        statusLabel: '準備中',
+        image: '/games/coming-soon.webp',
+        imageAlt: 'じゅんびちゅう げーむ の ぷれーすほるだー',
+        statusLabel: 'じゅんびちゅう',
         genre: 'TBD',
         playTime: 'TBD',
     },
     {
         id: 'coming-soon-slot-2',
         title: 'Another Slot',
-        shortDescription: '公開予定ゲームをここに追加できます。',
+        shortDescription: 'ここに つぎの げーむ を ついか できます。',
         href: '#',
-        image: '/apple-icon.png',
-        imageAlt: '次回公開予定ゲームのプレースホルダー',
-        statusLabel: '準備中',
+        image: '/games/coming-soon.webp',
+        imageAlt: 'じゅんびちゅう げーむ の ぷれーすほるだー',
+        statusLabel: 'じゅんびちゅう',
         genre: 'TBD',
         playTime: 'TBD',
     },
@@ -92,11 +92,11 @@ function GameCardView({ game, disabled }: { game: GameCard; disabled?: boolean }
                             <dd>{game.genre}</dd>
                         </div>
                         <div>
-                            <dt>目安</dt>
+                            <dt>ぷれいじかん</dt>
                             <dd>{game.playTime}</dd>
                         </div>
                     </dl>
-                    <span className={styles.disabledButton}>公開待ち</span>
+                    <span className={styles.disabledButton}>じゅんびちゅう</span>
                 </div>
             </article>
         );
@@ -117,12 +117,12 @@ function GameCardView({ game, disabled }: { game: GameCard; disabled?: boolean }
                         <dd>{game.genre}</dd>
                     </div>
                     <div>
-                        <dt>目安</dt>
+                        <dt>ぷれいじかん</dt>
                         <dd>{game.playTime}</dd>
                     </div>
                 </dl>
                 <Link href={game.href} className={styles.playButton}>
-                    プレイする
+                    PLAY
                 </Link>
             </div>
         </article>
@@ -135,15 +135,13 @@ export default function Home() {
             <div className={styles.container}>
                 <header className={styles.hero}>
                     <p className={styles.brandLabel}>AKYOBOX PORTAL</p>
-                    <h1 className={styles.heroTitle}>遊びたいゲームを選んで、すぐアクセス。</h1>
-                    <p className={styles.heroLead}>
-                        Akyoboxの各ゲームに直接飛べるポータルです。これから追加されるタイトルもここに集約します。
-                    </p>
+                    <h1 className={styles.heroTitle}>Akyobox</h1>
+                    <p className={styles.heroLead}>げーむ を えらんで すぐ ぷれい。</p>
                 </header>
 
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
-                        <h2>公開中ゲーム</h2>
+                        <h2>こうかいちゅう げーむ</h2>
                         <p>{liveGames.length} title</p>
                     </div>
                     <div className={styles.cardGrid}>
@@ -155,7 +153,7 @@ export default function Home() {
 
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
-                        <h2>近日公開</h2>
+                        <h2>じゅんびちゅう</h2>
                         <p>{comingSoonGames.length} slot</p>
                     </div>
                     <div className={styles.cardGrid}>

@@ -8,17 +8,14 @@ const oshigo = localFont({
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://akyobox.vercel.app'),
-    title: {
-        default: 'Akyobox',
-        template: '%s | Akyobox',
-    },
+    title: 'Akyobox - VRChatアバター Akyoゲームポータル',
     description:
         'Akyoboxは、AkyoをテーマにしたUnity WebGLゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのゲームをPCブラウザで直接プレイできるぞ！',
     keywords: ['Akyo', 'Unity', 'WebGL', 'Game', 'ミニゲーム', 'Next.js', 'React'],
     authors: [{ name: 'らど' }],
     creator: 'らど',
     openGraph: {
-        title: 'Akyobox',
+        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
         description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
         url: 'https://akyobox.vercel.app',
         siteName: 'Akyobox',
@@ -27,7 +24,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Akyobox',
+        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
         description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
         creator: '@rad_vrc',
         images: ['/opengraph-image'],
