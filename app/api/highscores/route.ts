@@ -125,15 +125,6 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
     
-    const entry: Entry = { 
-        name: String(name), 
-        score: Number(score), 
-        at: Date.now() 
-    };
-
-    // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
-    const jsonVal = JSON.stringify(entry);
-
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     // キーに prefix をつける
     const detailKey = `detail:${key}`;
@@ -179,7 +170,7 @@ export async function POST(req: NextRequest) {
         await kv.set(detailKey, jsonVal);
         
         // ソートセットにはユーザーキーのみをメンバーとして登録
-        const zaddResult = await kv.zadd(KEY, { score: finalScore, member: key });
+        await kv.zadd(KEY, { score: finalScore, member: key });
 
         return NextResponse.json({ ok: true, debug: { key, name, score: finalScore, updated: true } });
     }
