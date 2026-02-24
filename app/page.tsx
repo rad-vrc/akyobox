@@ -25,6 +25,7 @@ type GameCard = {
     imageAlt: string;
     genre: string;
     playTime: string;
+    creator: string;
 };
 
 const games: GameCard[] = [
@@ -37,6 +38,7 @@ const games: GameCard[] = [
         imageAlt: 'デビルヤギAkyoたたきのタイトルイメージ',
         genre: 'Akyoたたき',
         playTime: '1min',
+        creator: 'らど/rad1031',
     },
 ];
 
@@ -61,6 +63,10 @@ function GameCardView({ game }: { game: GameCard }) {
                     <div>
                         <dt>プレイじかん</dt>
                         <dd>{game.playTime}</dd>
+                    </div>
+                    <div>
+                        <dt>さくしゃ</dt>
+                        <dd>{game.creator}</dd>
                     </div>
                 </dl>
                 <Link href={game.href} className={styles.playButton}>
