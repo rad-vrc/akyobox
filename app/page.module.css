@@ -204,8 +204,20 @@
     padding-top: 1rem;
   }
 
+  .hero,
+  .card {
+    animation: none;
+  }
+
   .cardGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .card {
+    animation: none;
   }
 }
 
