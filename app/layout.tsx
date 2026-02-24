@@ -19,7 +19,7 @@ export const metadata: Metadata = {
         description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
         url: 'https://akyobox.vercel.app',
         siteName: 'Akyobox',
-        images: ['/x-icon.png'],
+        images: ['/og-image.png'],
         locale: 'ja_JP',
         type: 'website',
     },
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         title: 'Akyobox - VRChatアバター Akyoゲームポータル',
         description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
         creator: '@rad_vrc',
-        images: ['/x-icon.png'],
+        images: ['/og-image.png'],
     },
     icons: {
         icon: '/icon.png',

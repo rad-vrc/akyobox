@@ -12,7 +12,7 @@ export const metadata = {
             'Akyoboxのゲームポータル。公開中のAkyoゲームを一覧から選んでそのままプレイできるぞ！',
         url: 'https://akyobox.vercel.app/',
         siteName: 'Akyobox',
-        images: ['https://akyobox.vercel.app/x-icon.png'],
+        images: ['https://akyobox.vercel.app/og-image.png'],
         type: 'website',
     },
 };
