@@ -35,7 +35,7 @@ type GameCard = {
 const games: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
-        shortDescription: 'PCブラウザであそべるフリーAkyoミニゲーム。デビルヤギAkyoだけをたたいてハイスコアをねらおう！',
+        shortDescription: 'PCブラウザむけフリーAkyoミニゲーム。デビルヤギAkyoだけをたたいてハイスコアをねらおう！',
         href: '/games/whack-a-devilyagiakyo/',
         image: '/apple-icon.png',
         imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
