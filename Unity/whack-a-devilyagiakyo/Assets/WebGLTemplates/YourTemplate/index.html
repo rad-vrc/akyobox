@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Unity Web Player | whack-a-devilyagiakyo</title>
+        <title>激烈!!デビルヤギAkyo叩き</title>
         <meta property="og:title" content="激烈!!デビルヤギAkyo叩き" />
         <meta
             property="og:description"
@@ -19,7 +19,8 @@
             content="PCブラウザで遊べるUnity製フリーAkyoミニゲーム。デビルヤギAkyoだけを叩いてハイスコアを狙おう！"
         />
         <meta name="twitter:image" content="https://akyobox.vercel.app/apple-icon.png" />
-        <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+        <link rel="icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <link rel="stylesheet" href="TemplateData/style.css" />
         <style>
             @font-face {
@@ -28,25 +29,6 @@
                 font-display: swap;
             }
         </style>
-        <!-- 先読みで動画の立ち上がりを速くする -->
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/title.mp4"
-            type="video/mp4"
-        />
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/game-bg.mp4"
-            type="video/mp4"
-        />
-        <link
-            rel="preload"
-            as="video"
-            href="/games/whack-a-devilyagiakyo/ending.mp4"
-            type="video/mp4"
-        />
         <style>
             html,
             body {
@@ -54,6 +36,13 @@
                 height: 100%;
                 margin: 0;
                 padding: 0;
+                background-color: #110705;
+                background-image:
+                    linear-gradient(rgba(15, 7, 4, 0.62), rgba(15, 7, 4, 0.62)),
+                    url('/bg.webp');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
             }
 
             /* 背景動画をコンテナ内に閉じ、デスクトップは 1920x1080 で中央配置 */
@@ -266,7 +255,7 @@
         </div>
         <div id="unity-container" class="unity-desktop">
             <!-- 背景動画要素（コンテナ内に配置してキャンバスと同じ座標系に限定） -->
-            <video id="bgVideo" preload="auto" playsinline muted autoplay crossorigin="anonymous">
+            <video id="bgVideo" preload="metadata" playsinline muted autoplay crossorigin="anonymous">
                 <source src="/games/whack-a-devilyagiakyo/title.mp4" type="video/mp4" />
                 <track kind="captions" srclang="ja" label="No captions" src="data:text/vtt,WEBVTT" default />
                 Your browser does not support HTML5 video.
@@ -299,7 +288,6 @@
             const HIGHSCORE_ENDPOINT = '/api/highscores';
             let lastPostedScore = 0;
             let lastPostedName = 'Anonymous';
-            let cachedAnonId = null;
             // ローカル保存された自己ベストを読み込む
             let myBestScore = 0;
             try {
@@ -323,12 +311,7 @@
             function loadPlayerName() {
                 const input = document.getElementById('playerName');
                 if (!input) return 'Anonymous';
-                let saved = 'Anonymous';
-                try {
-                    saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
-                } catch (e) {
-                    console.warn('LocalStorage read failed:', e);
-                }
+                const saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
                 input.value = saved;
                 return saved;
             }
@@ -340,26 +323,37 @@
                 return val;
             }
 
+            // セッション中のanonIdをメモリにキャッシュ（localStorageが使えない場合のフォールバック）
+            let cachedAnonId = null;
+
             function getAnonId() {
-                if (cachedAnonId) return cachedAnonId;
-                const key = 'playerAnonId';
-                try {
-                    let id = localStorage.getItem(key);
-                    if (!id) {
-                        id = crypto.randomUUID
-                            ? crypto.randomUUID()
-                            : Math.random().toString(36).slice(2, 10);
-                        localStorage.setItem(key, id);
-                    }
-                    cachedAnonId = id;
-                    return id;
-                } catch (e) {
-                    console.warn('LocalStorage unavailable, using in-memory anonId:', e);
-                    cachedAnonId = crypto.randomUUID
-                        ? crypto.randomUUID()
-                        : Math.random().toString(36).slice(2, 10);
+                // メモリキャッシュがあればそれを返す（localStorageが使えない環境でも一貫性を保つ）
+                if (cachedAnonId) {
                     return cachedAnonId;
                 }
+
+                const key = 'playerAnonId';
+                let id = null;
+                try {
+                    id = localStorage.getItem(key);
+                } catch (e) {
+                    // プライベートブラウズ等でlocalStorageが使えない場合
+                    console.warn('localStorage read failed:', e);
+                }
+                if (!id) {
+                    id = crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : Math.random().toString(36).slice(2, 10);
+                    try {
+                        localStorage.setItem(key, id);
+                    } catch (e) {
+                        // 保存できない場合は無視（セッション中のみ有効なIDとして使用）
+                        console.warn('localStorage write failed:', e);
+                    }
+                }
+                // メモリにキャッシュ（セッション中は同じIDを返す）
+                cachedAnonId = id;
+                return id;
             }
             function attachNameInput() {
                 const input = document.getElementById('playerName');
@@ -375,7 +369,7 @@
                     try {
                         localStorage.setItem('playerName', getPlayerName());
                     } catch (e) {
-                        console.warn('LocalStorage write failed:', e);
+                        console.warn('Failed to save player name:', e);
                     }
                     applyFont();
                 });
@@ -410,8 +404,9 @@
                 const ol = document.getElementById('rankingList');
                 if (!ol) return;
 
-                // 現在のプレイヤー名
-                const myName = getPlayerName();
+                // 自分のanonIdの先頭8文字（APIが返すマスク済みIDと比較するため）
+                const myAnonId = getAnonId();
+                const myMaskedId = myAnonId ? myAnonId.slice(0, 8) : null;
 
                 // サンプル表示か実データか
                 let display = [];
@@ -430,10 +425,12 @@
                     const dispName =
                         item && item.name && String(item.name).trim() ? item.name : 'Anonymous';
                     li.textContent = `${dispName} - ${item.score ?? 0}`;
+                    // anonIdで比較（名前ではなくユニークIDで判定）
+                    // これにより同じ名前の他人をハイライトしなくなる
                     if (
                         item &&
-                        typeof item.name === 'string' &&
-                        item.name.toLowerCase() === myName.toLowerCase()
+                        myMaskedId &&
+                        item.anonId === myMaskedId
                     ) {
                         li.classList.add('highlight');
                     }
