@@ -1,7 +1,6 @@
 import { kv } from "@vercel/kv";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic"; // キャッシュ無効化（重要）
 
 type Entry = {
