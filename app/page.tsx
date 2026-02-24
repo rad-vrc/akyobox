@@ -75,7 +75,16 @@ export default function Home() {
         <main className={styles.page}>
             <div className={styles.container}>
                 <header className={styles.hero}>
-                    <h1 className={styles.heroTitle}>Akyobox</h1>
+                    <h1 className={styles.visuallyHidden}>Akyobox</h1>
+                    <Image
+                        src="/logo_akyobox.png"
+                        alt="Akyobox ロゴ"
+                        width={1980}
+                        height={305}
+                        className={styles.heroLogo}
+                        priority
+                        sizes="(max-width: 680px) 92vw, (max-width: 1200px) 78vw, 980px"
+                    />
                 </header>
 
                 <section className={styles.section}>
