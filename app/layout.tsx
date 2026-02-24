@@ -3,7 +3,7 @@ import localFont from 'next/font/local';
 
 const oshigo = localFont({
     src: '../public/fonts/oshigo.otf',
-    display: 'optional',
+    display: 'swap',
     preload: false,
 });
 
