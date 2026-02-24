@@ -76,6 +76,7 @@ export default function Home() {
                         width={1980}
                         height={305}
                         className={styles.heroLogo}
+                        priority
                         quality={60}
                         sizes="(max-width: 680px) 92vw, (max-width: 1200px) 78vw, 980px"
                     />
