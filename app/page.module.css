@@ -214,6 +214,13 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .card {
+    animation: none;
+  }
+}
+
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
