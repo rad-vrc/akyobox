@@ -4,10 +4,12 @@ import styles from './page.module.css';
 
 export const metadata = {
     title: 'Akyobox - VRChatアバター Akyoゲームポータル',
-    description: 'Akyoboxのゲームポータル。公開中のゲームを一覧から選んでそのままプレイできます。',
+    description:
+        'Akyoboxのゲームポータル。公開中のAkyoゲームを一覧から選んでそのままプレイできるぞ！。',
     openGraph: {
         title: 'Akyobox - VRChatアバター Akyoゲームポータル',
-        description: 'Akyoboxのゲームポータル。公開中のゲームを一覧から選んでそのままプレイできます。',
+        description:
+            'Akyoboxのゲームポータル。公開中のAkyoゲームを一覧から選んでそのままプレイできるぞ！',
         url: 'https://akyobox.vercel.app/',
         siteName: 'Akyobox',
         images: [
@@ -35,10 +37,11 @@ type GameCard = {
 const games: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
-        shortDescription: 'PCブラウザむけフリーAkyoミニゲーム。デビルヤギAkyoだけをたたいてハイスコアをねらおう！',
+        shortDescription:
+            'PCブラウザむけフリーAkyoミニゲーム。\nデビルヤギAkyoだけをたたいてハイスコアをねらおう！',
         href: '/games/whack-a-devilyagiakyo/',
         image: '/apple-icon.png',
-        imageAlt: 'デビルヤギ Akyo たたき の たいとる いめーじ',
+        imageAlt: 'デビルヤギAkyoたたきのタイトルイメージ',
         genre: 'Akyoたたき',
         playTime: '1min',
     },
@@ -48,7 +51,12 @@ function GameCardView({ game }: { game: GameCard }) {
     return (
         <article className={styles.card}>
             <div className={styles.thumbnail}>
-                <Image src={game.image} alt={game.imageAlt} fill sizes="(max-width: 900px) 100vw, 33vw" />
+                <Image
+                    src={game.image}
+                    alt={game.imageAlt}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 33vw"
+                />
             </div>
             <div className={styles.cardBody}>
                 <p className={styles.cardDescription}>{game.shortDescription}</p>

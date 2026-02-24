@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     metadataBase: new URL('https://akyobox.vercel.app'),
     title: 'Akyobox - VRChatアバター Akyoゲームポータル',
     description:
-        'Akyoboxは、AkyoをテーマにしたUnity WebGLゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのゲームをPCブラウザで直接プレイできるぞ！',
+        'Akyoboxは、Akyoをテーマにしたゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのゲームをPCブラウザで直接プレイできるぞ！',
     keywords: ['Akyo', 'Unity', 'WebGL', 'Game', 'ミニゲーム', 'Next.js', 'React'],
     authors: [{ name: 'らど' }],
     creator: 'らど',
