@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import styles from './page.module.css';
 
 type GameCard = {
@@ -57,9 +56,9 @@ function GameCardView({ game }: { game: GameCard }) {
                         <dd>{game.creator}</dd>
                     </div>
                 </dl>
-                <Link href={game.href} className={styles.playButton}>
+                <a href={game.href} className={styles.playButton}>
                     プレイする
-                </Link>
+                </a>
             </div>
         </article>
     );
@@ -78,6 +77,7 @@ export default function Home() {
                         height={305}
                         className={styles.heroLogo}
                         priority
+                        quality={60}
                         sizes="(max-width: 680px) 92vw, (max-width: 1200px) 78vw, 980px"
                     />
                 </header>
