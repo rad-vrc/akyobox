@@ -311,7 +311,12 @@
             function loadPlayerName() {
                 const input = document.getElementById('playerName');
                 if (!input) return 'Anonymous';
-                const saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
+                let saved = 'Anonymous';
+                try {
+                    saved = sanitizeFrontName(localStorage.getItem('playerName') || 'Anonymous');
+                } catch (e) {
+                    console.warn('localStorage read failed:', e);
+                }
                 input.value = saved;
                 return saved;
             }

@@ -6,7 +6,6 @@
   --muted: #596058;
   --accent: #186d67;
   --accent-strong: #115954;
-  --tile: #f0eee4;
   min-height: 100vh;
   background-color: var(--bg);
   background-image: url("/bg.webp");
@@ -182,9 +181,6 @@
   letter-spacing: 0.04em;
   text-decoration: none;
   padding: 0.66rem 0.85rem;
-}
-
-.playButton {
   color: #f5fffc;
   background: var(--accent);
   border: 1px solid var(--accent);

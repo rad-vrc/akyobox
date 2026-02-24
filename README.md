@@ -78,6 +78,14 @@ Unity/
 `/games/whack-a-devilyagiakyo/` は `public` 配下の静的 Unity WebGL を配信します。  
 背景の見え方はポータルと揃えるため、`index.html` と `TemplateData/style.css` の両方で背景指定を持たせています。
 
+### テンプレート同期（重要）
+
+`Unity/whack-a-devilyagiakyo/Assets/WebGLTemplates/YourTemplate/index.html` を正として運用します。  
+Unity再ビルド時に `public/games/whack-a-devilyagiakyo/index.html` が上書きされるため、直接 `public` 側だけを編集しないでください。
+
+- 変更時は `Unity/.../YourTemplate/index.html` と `public/.../index.html` の両方を同時更新する
+- PR前に2ファイル差分を確認する（乖離がないことを確認）
+
 ## ローカル開発
 
 ```bash

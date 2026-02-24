@@ -2,23 +2,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from './page.module.css';
 
-export const metadata = {
-    title: 'Akyobox - VRChatアバター Akyoゲームポータル',
-    description:
-        'Akyoboxのゲームポータル。公開中のAkyoゲームを一覧から選んでそのままプレイできるぞ！。',
-    openGraph: {
-        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
-        description:
-            'Akyoboxのゲームポータル。公開中のAkyoゲームを一覧から選んでそのままプレイできるぞ！',
-        url: 'https://akyobox.vercel.app/',
-        siteName: 'Akyobox',
-        images: ['https://akyobox.vercel.app/og-image.png'],
-        type: 'website',
-    },
-};
-
 type GameCard = {
     id: string;
+    title: string;
     shortDescription: string;
     href: string;
     image: string;
@@ -31,6 +17,7 @@ type GameCard = {
 const games: GameCard[] = [
     {
         id: 'whack-a-devilyagiakyo',
+        title: '激烈!!デビルヤギAkyo叩き',
         shortDescription:
             'PCブラウザむけフリーAkyoミニゲーム。\nデビルヤギAkyoだけをたたいてハイスコアをねらおう！',
         href: '/games/whack-a-devilyagiakyo/',
@@ -54,6 +41,7 @@ function GameCardView({ game }: { game: GameCard }) {
                 />
             </div>
             <div className={styles.cardBody}>
+                <h3 className={styles.visuallyHidden}>{game.title}</h3>
                 <p className={styles.cardDescription}>{game.shortDescription}</p>
                 <dl className={styles.metaList}>
                     <div>
