@@ -1,8 +1,10 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #000;
-    background-image: url('TemplateData/bg.png');
+    background-color: #110705;
+    background-image:
+        linear-gradient(rgba(15, 7, 4, 0.5), rgba(15, 7, 4, 0.5)),
+        url('/bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
