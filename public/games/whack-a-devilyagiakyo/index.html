@@ -304,8 +304,8 @@
             const preloadedVideos = {};
 
             function preloadVideo(src) {
-                if (preloadedVideos[src]) return; // 既にプリロード済み
-                preloadedVideos[src] = true;
+                if (preloadedVideos[src]) return; // 既にプリロード済みまたは進行中
+                preloadedVideos[src] = true; // 重複リクエスト防止（進行中フラグ）
                 console.log('JS: preloading video:', src);
 
                 // <video crossorigin="anonymous"> と同じ CORS モードで fetch し、
@@ -316,10 +316,14 @@
                     .then(res => res.arrayBuffer())
                     .then(() => {
                         console.log('JS: video prefetch complete:', src);
+                        // 成功 → フラグ維持（再ダウンロード不要）
                     })
                     .catch(() => {
-                        // プリロード失敗は致命的ではないので無視
-                        console.log('JS: video prefetch failed (non-critical):', src);
+                        // プリロード失敗 → フラグをクリアして次回の再試行を許可
+                        // 一時的なネットワーク/CDN エラーの場合、次の PlayGameVideo() で
+                        // 再度プリロードを試行できるようにする
+                        preloadedVideos[src] = false;
+                        console.log('JS: video prefetch failed, will retry on next attempt:', src);
                     });
             }
 
@@ -520,7 +524,7 @@
                 // ポータルサイトのトップページをシェア先にする
                 const url = 'akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
-                const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
+                const shareUrl = `{{https://twitter.com/intent/tweet?text=${text}}}&url=${encodeURIComponent(
                     url
                 )}`;
                 window.open(shareUrl, '_blank', 'noopener,noreferrer');
