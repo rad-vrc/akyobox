@@ -297,6 +297,25 @@
             } catch(e) {}
 
             // ==========================================
+            // 動画プリロード管理
+            // ==========================================
+            // ゲーム本編開始時にエンディング動画をバックグラウンドで先読みし、
+            // PlayEndingVideo 呼び出し時の canplay 待ちによるズレを最小化する。
+            const preloadedVideos = {};
+
+            function preloadVideo(src) {
+                if (preloadedVideos[src]) return; // 既にプリロード済み
+                preloadedVideos[src] = true;
+                console.log('JS: preloading video:', src);
+
+                // fetch でブラウザキャッシュに入れる（video要素を使わない軽量な方法）
+                fetch(src, { mode: 'no-cors', cache: 'force-cache' }).catch(() => {
+                    // プリロード失敗は致命的ではないので無視
+                    console.log('JS: video prefetch failed (non-critical):', src);
+                });
+            }
+
+            // ==========================================
             // Highscore & Name handling
             // ==========================================
             function sanitizeFrontName(raw) {
@@ -575,6 +594,11 @@
             window.PlayGameVideo = function () {
                 console.log('JS: PlayGameVideo called');
                 swapVideo(VIDEO_PATH_GAME, false, 'game');
+
+                // ゲーム本編中にエンディング動画をバックグラウンドでプリロード
+                // これにより PlayEndingVideo 呼び出し時のバッファリング遅延を最小化し、
+                // Unity の音楽と映像のズレを防ぐ
+                preloadVideo(VIDEO_PATH_ENDING);
             };
 
             // エンディング動画
