@@ -1,1 +1,47 @@
-{  "outputDirectory": ".next",  "rewrites": [    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data",      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data.br"    },    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js",      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js.br"    },    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm",      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm.br"    }  ],  "headers": [    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data",      "headers": [        { "key": "Content-Type", "value": "application/octet-stream" },        { "key": "Content-Encoding", "value": "br" }      ]    },    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js",      "headers": [        { "key": "Content-Type", "value": "application/javascript" },        { "key": "Content-Encoding", "value": "br" }      ]    },    {      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm",      "headers": [        { "key": "Content-Type", "value": "application/wasm" },        { "key": "Content-Encoding", "value": "br" }      ]    }  ]}
+{
+  "outputDirectory": ".next",
+  "redirects": [
+    {
+      "source": "/games/whack-a-devilyagiakyo",
+      "destination": "/games/whack-a-devilyagiakyo/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data",
+      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data.br"
+    },
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js",
+      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js.br"
+    },
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm",
+      "destination": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm.br"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.data",
+      "headers": [
+        { "key": "Content-Type", "value": "application/octet-stream" },
+        { "key": "Content-Encoding", "value": "br" }
+      ]
+    },
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.framework.js",
+      "headers": [
+        { "key": "Content-Type", "value": "application/javascript" },
+        { "key": "Content-Encoding", "value": "br" }
+      ]
+    },
+    {
+      "source": "/games/whack-a-devilyagiakyo/Build/whack-a-devilyagiakyo.wasm",
+      "headers": [
+        { "key": "Content-Type", "value": "application/wasm" },
+        { "key": "Content-Encoding", "value": "br" }
+      ]
+    }
+  ]
+}
