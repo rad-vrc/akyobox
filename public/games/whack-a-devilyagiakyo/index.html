@@ -313,7 +313,14 @@
                 // レスポンスボディを明示的に消費（arrayBuffer）して
                 // 確実に HTTP キャッシュへ書き込ませる。
                 fetch(src, { mode: 'cors', credentials: 'same-origin', cache: 'force-cache' })
-                    .then(res => res.arrayBuffer())
+                    .then((res) => {
+                        // fetch は 404/503 等でも reject しないため、
+                        // HTTP ステータスを明示的に検証する
+                        if (!res.ok) {
+                            throw new Error(`prefetch failed: ${res.status}`);
+                        }
+                        return res.arrayBuffer();
+                    })
                     .then(() => {
                         console.log('JS: video prefetch complete:', src);
                         // 成功 → フラグ維持（再ダウンロード不要）
@@ -524,7 +531,7 @@
                 // ポータルサイトのトップページをシェア先にする
                 const url = 'akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
-                const shareUrl = `{{https://twitter.com/intent/tweet?text=${text}}}&url=${encodeURIComponent(
+                const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
                 )}`;
                 window.open(shareUrl, '_blank', 'noopener,noreferrer');
