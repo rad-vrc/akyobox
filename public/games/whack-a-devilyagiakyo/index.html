@@ -310,12 +310,17 @@
 
                 // <video crossorigin="anonymous"> と同じ CORS モードで fetch し、
                 // ブラウザキャッシュを共有できるようにする。
-                // mode:'no-cors' だと CORS モードが異なりキャッシュが別扱いになるため、
-                // 35MB の二重ダウンロードが発生してしまう。
-                fetch(src, { mode: 'cors', credentials: 'same-origin', cache: 'force-cache' }).catch(() => {
-                    // プリロード失敗は致命的ではないので無視
-                    console.log('JS: video prefetch failed (non-critical):', src);
-                });
+                // レスポンスボディを明示的に消費（arrayBuffer）して
+                // 確実に HTTP キャッシュへ書き込ませる。
+                fetch(src, { mode: 'cors', credentials: 'same-origin', cache: 'force-cache' })
+                    .then(res => res.arrayBuffer())
+                    .then(() => {
+                        console.log('JS: video prefetch complete:', src);
+                    })
+                    .catch(() => {
+                        // プリロード失敗は致命的ではないので無視
+                        console.log('JS: video prefetch failed (non-critical):', src);
+                    });
             }
 
             // ==========================================
@@ -515,7 +520,7 @@
                 // ポータルサイトのトップページをシェア先にする
                 const url = 'akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
-                const shareUrl = `{{https://twitter.com/intent/tweet?text=${text}}}&url=${encodeURIComponent(
+                const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
                 )}`;
                 window.open(shareUrl, '_blank', 'noopener,noreferrer');
