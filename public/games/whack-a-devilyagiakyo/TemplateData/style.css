@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #000;
-    background-image: url('TemplateData/bg.png');
+    background-image: url('bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

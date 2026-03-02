@@ -8,11 +8,31 @@ type Entry = {
   name: string;
   score: number;
   at: number;
+  anonId?: string;
+};
+
+type PublicEntry = {
+  name: string;
+  score: number;
+  at: number;
 };
 
 const KEY = "highscores";
 const LIMIT = 10;
-const USER_HASH = "highscores-by-user";
+
+function isDevelopment(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+function isKvConfigured(): boolean {
+  const url = process.env.KV_REST_API_URL?.trim();
+  const token = process.env.KV_REST_API_TOKEN?.trim();
+  if (!url || !token) return false;
+  if (!url.startsWith("https://")) return false;
+  if (url.includes("your_kv_rest_api_url")) return false;
+  if (token.includes("your_kv_rest_api_token")) return false;
+  return true;
+}
 
 function userKey(name: string, anonId?: string) {
   // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
@@ -42,6 +62,17 @@ function sanitizeScore(raw: unknown): number | null {
 }
 
 export async function GET() {
+  if (!isKvConfigured()) {
+    console.warn("GET /api/highscores skipped: KV is not configured");
+    if (!isDevelopment()) {
+      return NextResponse.json(
+        { error: "highscore backend unavailable", details: "KV is not configured" },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json([]);
+  }
+
   try {
     // rev: true でスコア降順（高い順）にソートされる
     // 0 から LIMIT-1 (9) まで取得することでトップ10を取得
@@ -56,8 +87,6 @@ export async function GET() {
       )
       .filter((m) => m.length > 0);
 
-    const debugErrors: any[] = [];
-    
     // [Refactor] Hashではなく通常のGETを使う
     const entries = await Promise.all(
       members.map(async (member) => {
@@ -66,7 +95,6 @@ export async function GET() {
           const raw = await kv.get<Entry>(detailKey); // Vercel KVのgetは自動でJSONパースしてくれる場合があるが、明示的に型指定
           
           if (!raw) {
-              debugErrors.push({ member, error: "null raw (key not found)", key: detailKey });
               // ランキングにあるのにデータがない場合は掃除
               await kv.zrem(KEY, member);
               return null;
@@ -76,15 +104,21 @@ export async function GET() {
           // 文字列が返ってきた場合のみ parse する
           const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
           return entry as Entry;
-        } catch (e: any) {
-          debugErrors.push({ member, error: e.message });
+        } catch (_e: unknown) {
+          // 壊れたデータは次回以降の表示劣化を防ぐために除去
+          await kv.zrem(KEY, member);
           return null;
         }
       })
     );
     const parsed = entries.filter((e): e is Entry => !!e);
+    const publicEntries: PublicEntry[] = parsed.map(({ name, score, at }) => ({
+      name,
+      score,
+      at,
+    }));
 
-    return NextResponse.json(parsed);
+    return NextResponse.json(publicEntries);
   } catch (err: any) {
     console.error("GET /api/highscores error", err);
     return NextResponse.json({ error: "failed to fetch scores", details: err.message }, { status: 500 });
@@ -92,6 +126,17 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isKvConfigured()) {
+    console.warn("POST /api/highscores skipped: KV is not configured");
+    if (!isDevelopment()) {
+      return NextResponse.json(
+        { error: "highscore backend unavailable", details: "KV is not configured" },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json({ ok: true, skipped: true, reason: "kv not configured" });
+  }
+
   try {
     const body = await req.json();
     const name = sanitizeName(body?.name);
@@ -106,22 +151,22 @@ export async function POST(req: NextRequest) {
     // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
     
-    const entry: Entry = { 
-        name: String(name), 
-        score: Number(score), 
-        at: Date.now() 
-    };
-
-    // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
-    const jsonVal = JSON.stringify(entry);
-
     // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
     // キーに prefix をつける
     const detailKey = `detail:${key}`;
 
     // 既存スコアを確認し、ハイスコア更新時のみ保存
-    const currentBest = await kv.get<Entry>(detailKey);
-    // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
+    const currentBestRaw = await kv.get<Entry | string>(detailKey);
+    let currentBest: Entry | null = null;
+    if (typeof currentBestRaw === "string") {
+      try {
+        currentBest = JSON.parse(currentBestRaw) as Entry;
+      } catch {
+        currentBest = null;
+      }
+    } else if (currentBestRaw && typeof currentBestRaw === "object") {
+      currentBest = currentBestRaw as Entry;
+    }
     
     let shouldUpdate = false;
     let finalScore = score;
@@ -152,7 +197,8 @@ export async function POST(req: NextRequest) {
         const entry: Entry = { 
             name: String(name), 
             score: Number(finalScore), 
-            at: finalAt
+          at: finalAt,
+          anonId: anonIdClean,
         };
 
         // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
@@ -160,7 +206,7 @@ export async function POST(req: NextRequest) {
         await kv.set(detailKey, jsonVal);
         
         // ソートセットにはユーザーキーのみをメンバーとして登録
-        const zaddResult = await kv.zadd(KEY, { score: finalScore, member: key });
+        await kv.zadd(KEY, { score: finalScore, member: key });
 
         return NextResponse.json({ ok: true, debug: { key, name, score: finalScore, updated: true } });
     }
