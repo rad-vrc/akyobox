@@ -62,6 +62,18 @@ function hasMember(x: unknown): x is { member: unknown } {
   return typeof x === "object" && x !== null && "member" in x;
 }
 
+async function cleanupLeaderboardMember(member: string, reason: string): Promise<void> {
+  try {
+    await kv.zrem(KEY, member);
+  } catch (err: unknown) {
+    console.warn("GET /api/highscores: failed to cleanup stale member", {
+      member,
+      reason,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 export async function GET() {
   if (!isKvConfigured()) {
     console.warn("GET /api/highscores skipped: KV is not configured");
@@ -100,7 +112,7 @@ export async function GET() {
 
         if (!raw) {
           // 詳細キーが欠落している stale member はクリーンアップする
-          await kv.zrem(KEY, member);
+          await cleanupLeaderboardMember(member, "detail key missing");
           return null;
         }
 
@@ -110,7 +122,7 @@ export async function GET() {
             entry = JSON.parse(raw) as Entry;
           } catch {
             // 破損データはクリーンアップ対象
-            await kv.zrem(KEY, member);
+            await cleanupLeaderboardMember(member, "detail JSON parse error");
             return null;
           }
         } else {
