@@ -61,6 +61,10 @@ function sanitizeScore(raw: unknown): number | null {
   return Math.floor(n);
 }
 
+function hasMember(x: unknown): x is { member: unknown } {
+  return typeof x === "object" && x !== null && "member" in x;
+}
+
 export async function GET() {
   if (!isKvConfigured()) {
     console.warn("GET /api/highscores skipped: KV is not configured");
@@ -81,8 +85,8 @@ export async function GET() {
       .map((m: unknown) =>
         typeof m === "string"
           ? m
-          : typeof m === "object" && m !== null && "member" in (m as any)
-          ? String((m as any).member)
+          : hasMember(m)
+          ? String(m.member)
           : ""
       )
       .filter((m) => m.length > 0);
@@ -104,7 +108,7 @@ export async function GET() {
           // 文字列が返ってきた場合のみ parse する
           const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
           return entry as Entry;
-        } catch (_e: unknown) {
+        } catch {
           // 壊れたデータは次回以降の表示劣化を防ぐために除去
           await kv.zrem(KEY, member);
           return null;
@@ -119,9 +123,10 @@ export async function GET() {
     }));
 
     return NextResponse.json(publicEntries);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const details = err instanceof Error ? err.message : String(err);
     console.error("GET /api/highscores error", err);
-    return NextResponse.json({ error: "failed to fetch scores", details: err.message }, { status: 500 });
+    return NextResponse.json({ error: "failed to fetch scores", details }, { status: 500 });
   }
 }
 
@@ -138,12 +143,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
-    const name = sanitizeName(body?.name);
-    const anonIdRaw = typeof body?.anonId === "string" ? body.anonId : undefined;
+    const body: unknown = await req.json();
+    const payload = typeof body === "object" && body !== null ? body : {};
+    const record = payload as Record<string, unknown>;
+    const name = sanitizeName(record.name);
+    const anonIdRaw = typeof record.anonId === "string" ? record.anonId : undefined;
     const anonIdClean =
       anonIdRaw?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32) || undefined;
-    const score = sanitizeScore(body?.score);
+    const score = sanitizeScore(record.score);
     if (score === null) {
       return NextResponse.json({ error: "invalid score" }, { status: 400 });
     }
@@ -212,8 +219,9 @@ export async function POST(req: NextRequest) {
     }
     
     return NextResponse.json({ ok: true, ignored: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const details = err instanceof Error ? err.message : String(err);
     console.error("POST /api/highscores error", err);
-    return NextResponse.json({ error: "failed to submit score", details: err.message }, { status: 500 });
+    return NextResponse.json({ error: "failed to submit score", details }, { status: 500 });
   }
 }

@@ -434,7 +434,12 @@
                         typeof item.anonId === 'string' &&
                         item.anonId.length > 0 &&
                         item.anonId === myAnonId;
-                    if (isMineByAnonId) {
+                    const isMineByName =
+                        !isMineByAnonId &&
+                        item &&
+                        typeof item.name === 'string' &&
+                        item.name.toLowerCase() === myName.toLowerCase();
+                    if (isMineByAnonId || isMineByName) {
                         li.classList.add('highlight');
                     }
                     ol.appendChild(li);

@@ -1,9 +1,11 @@
 import type { NextConfig } from 'next';
 
 const gameBuildBase = '/games/whack-a-devilyagiakyo/Build';
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
     async rewrites() {
+        if (!isDevelopment) return [];
         return [
             {
                 source: `${gameBuildBase}/whack-a-devilyagiakyo.data`,
@@ -20,6 +22,7 @@ const nextConfig: NextConfig = {
         ];
     },
     async headers() {
+        if (!isDevelopment) return [];
         return [
             {
                 source: `${gameBuildBase}/whack-a-devilyagiakyo.data`,
