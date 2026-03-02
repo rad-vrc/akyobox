@@ -4,33 +4,32 @@ import localFont from 'next/font/local';
 const oshigo = localFont({
     src: '../public/fonts/oshigo.otf',
     display: 'swap',
+    preload: false,
 });
 
 export const metadata: Metadata = {
     metadataBase: new URL('https://akyobox.vercel.app'),
-    title: {
-        default: 'Akyobox',
-        template: '%s | Akyobox',
-    },
+    title: 'Akyobox - VRChatアバター Akyoゲームポータル',
     description:
-        'Akyoboxは、AkyoをテーマにしたUnity WebGLゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのゲームをPCブラウザで直接プレイできるぞ！',
+        'Akyoboxは、VRChatのアバター“Akyo”をテーマにしたゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのAkyoゲームをプレイできるぞ！',
     keywords: ['Akyo', 'Unity', 'WebGL', 'Game', 'ミニゲーム', 'Next.js', 'React'],
     authors: [{ name: 'らど' }],
     creator: 'らど',
     openGraph: {
-        title: 'Akyobox',
-        description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
+        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
+        description: 'Akyoboxは、VRChatのアバター“Akyo”をテーマにしたゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのAkyoゲームをプレイできるぞ！',
         url: 'https://akyobox.vercel.app',
         siteName: 'Akyobox',
+        images: ['/og-image.png'],
         locale: 'ja_JP',
         type: 'website',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Akyobox',
-        description: 'デビルヤギAkyoをテーマにしたUnity WebGLゲームをブラウザでプレイしよう！',
+        title: 'Akyobox - VRChatアバター Akyoゲームポータル',
+        description: 'Akyoboxは、VRChatのアバター"Akyo"をテーマにしたゲームのポータルサイトだ。「激烈！デビルヤギAkyo叩き」などのAkyoゲームをプレイできるぞ！',
         creator: '@rad_vrc',
-        images: ['/opengraph-image'],
+        images: ['/og-image.png'],
     },
     icons: {
         icon: '/icon.png',

@@ -1,0 +1,242 @@
+.page {
+  --bg: #110705;
+  --panel: #fdfcf8;
+  --panel-border: #d6d3c8;
+  --ink: #1c1d1a;
+  --muted: #596058;
+  --accent: #186d67;
+  --accent-strong: #115954;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: url("/bg.webp");
+  background-position: center center;
+  background-size: cover;
+  color: var(--ink);
+  position: relative;
+  overflow-x: clip;
+}
+
+.page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-color: rgba(15, 7, 4, 0.62);
+}
+
+.container {
+  width: min(1180px, 100% - 2rem);
+  margin: 0 auto;
+  padding: 2rem 0 3.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(0.1rem, 0.8vw, 0.35rem) 0 clamp(0.35rem, 1.2vw, 0.65rem);
+  animation: fadeSlideUp 420ms ease-out both;
+}
+
+.heroLogo {
+  width: min(92vw, 980px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.section {
+  margin-top: clamp(0.7rem, 1.8vw, 1.15rem);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin: 0 0 0.55rem;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.35rem);
+  letter-spacing: 0.01em;
+  color: #ffecda;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+  gap: 0.9rem;
+  justify-content: start;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  overflow: clip;
+  box-shadow: 0 14px 24px rgba(26, 36, 32, 0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  animation: fadeSlideUp 420ms ease-out both;
+  transition: transform 260ms ease-out, box-shadow 260ms ease-out, border-color 260ms ease-out;
+}
+
+.card:nth-child(2) {
+  animation-delay: 55ms;
+}
+
+.card:nth-child(3) {
+  animation-delay: 110ms;
+}
+
+.card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 20px 34px rgba(26, 36, 32, 0.11);
+  border-color: #c7c3b7;
+}
+
+.thumbnail {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #160806;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.thumbnail img {
+  object-fit: contain;
+}
+
+.cardBody {
+  padding: 0.82rem 0.85rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  height: 100%;
+}
+
+.cardDescription {
+  margin: 0;
+  color: #2c2c26;
+  font-family: inherit;
+  line-height: 1.55;
+  font-size: 0.94rem;
+  white-space: pre-line;
+}
+
+.metaList {
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+  border: 1px dashed #cbc7bb;
+  border-radius: 12px;
+  padding: 0.55rem 0.6rem;
+  background: #f8f7f3;
+}
+
+.metaList div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.metaList dt,
+.metaList dd {
+  margin: 0;
+  font-size: 0.83rem;
+}
+
+.metaList dt {
+  color: var(--muted);
+}
+
+.metaList dd {
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.playButton {
+  margin-top: auto;
+  border-radius: 11px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  padding: 0.66rem 0.85rem;
+  color: #f5fffc;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  transition: background-color 300ms ease-out, transform 230ms ease-out;
+}
+
+.playButton:hover {
+  background: var(--accent-strong);
+  transform: scale(1.03);
+}
+
+@media (max-width: 980px) {
+  .cardGrid {
+    grid-template-columns: minmax(0, 360px);
+  }
+}
+
+@media (max-width: 680px) {
+  .container {
+    width: min(100% - 1rem, 620px);
+    padding-top: 1rem;
+  }
+
+  .hero,
+  .card {
+    animation: none;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardBody {
+    height: auto;
+  }
+
+  .playButton {
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .card {
+    animation: none;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -4,6 +4,9 @@ const gameBuildBase = '/games/whack-a-devilyagiakyo/Build';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
+    images: {
+        qualities: [60, 75],
+    },
     async rewrites() {
         if (!isDevelopment) return [];
         return [

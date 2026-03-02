@@ -227,3 +227,18 @@ alwaysApply: true
 ---
 
 このルールに従い、適応的推論とツール群を活用して、コーディングタスクを**安全かつ効率的に自律実行**してください。
+
+---
+
+## 7. AkyoBox 推奨スキル（即参照）
+
+- `develop-web-game`: Unity WebGL を含む Web ゲーム改修と検証ループ向け。
+- `frontend-design`: ゲームポータルの UI 改善・見た目調整向け。
+- `webapp-testing`: ローカル Web アプリの画面/動作テスト向け。
+- `playwright-skill`: ブラウザ操作の自動化と回帰チェック向け。
+- `vercel-deploy`: Vercel デプロイ、失敗時ログ調査向け。
+- `vercel-kv`: ランキング用 Vercel KV のデータ確認・運用向け。
+- `redis-js`: Redis の実装パターン確認・デバッグ向け。
+- `sentry`: 本番エラーの把握と原因切り分け向け。
+- `security-best-practices`: セキュリティ観点レビューが必要な時に使用。
+- `find-skills`: 追加で必要な skill を探索する時に使用。
