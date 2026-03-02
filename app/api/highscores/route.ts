@@ -19,6 +19,9 @@ type PublicEntry = {
 
 const KEY = "highscores";
 const LIMIT = 10;
+const LOCK_TTL_SECONDS = 5;
+const LOCK_WAIT_MS = 1200;
+const LOCK_RETRY_MS = 80;
 
 function isDevelopment(): boolean {
   return process.env.NODE_ENV === "development";
@@ -74,6 +77,41 @@ async function cleanupLeaderboardMember(member: string, reason: string): Promise
     console.warn("GET /api/highscores: failed to cleanup stale member", {
       member,
       reason,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function acquireUserLock(memberKey: string): Promise<string | null> {
+  const lockKey = `lock:${memberKey}`;
+  const token = crypto.randomUUID();
+  const deadline = Date.now() + LOCK_WAIT_MS;
+
+  while (Date.now() < deadline) {
+    const acquired = await kv.set(lockKey, token, { nx: true, ex: LOCK_TTL_SECONDS });
+    if (acquired === "OK") {
+      return token;
+    }
+    await sleep(LOCK_RETRY_MS);
+  }
+
+  return null;
+}
+
+async function releaseUserLock(memberKey: string, token: string): Promise<void> {
+  const lockKey = `lock:${memberKey}`;
+  try {
+    const current = await kv.get<string>(lockKey);
+    if (current === token) {
+      await kv.del(lockKey);
+    }
+  } catch (err: unknown) {
+    console.warn("POST /api/highscores: failed to release lock", {
+      lockKey,
       error: err instanceof Error ? err.message : String(err),
     });
   }
@@ -204,65 +242,77 @@ export async function POST(req: NextRequest) {
     }
 
     const detailKey = `detail:${key}`;
-    const currentBestRaw = await kv.get<Entry | string>(detailKey);
-
-    let currentBest: Entry | null = null;
-    if (typeof currentBestRaw === "string") {
-      try {
-        currentBest = JSON.parse(currentBestRaw) as Entry;
-      } catch {
-        console.warn("Failed to parse currentBest for key:", detailKey);
-        currentBest = null;
-      }
-    } else if (currentBestRaw && typeof currentBestRaw === "object") {
-      currentBest = currentBestRaw as Entry;
+    const lockToken = await acquireUserLock(key);
+    if (!lockToken) {
+      return NextResponse.json(
+        { error: "conflict", details: "Please retry score submission" },
+        { status: 409 }
+      );
     }
 
-    let shouldUpdate = false;
-    let finalScore = score;
-    let finalAt = Date.now();
+    try {
+      const currentBestRaw = await kv.get<Entry | string>(detailKey);
 
-    if (currentBest && typeof currentBest === "object" && "score" in currentBest) {
-      const bestScore = Number(currentBest.score);
+      let currentBest: Entry | null = null;
+      if (typeof currentBestRaw === "string") {
+        try {
+          currentBest = JSON.parse(currentBestRaw) as Entry;
+        } catch {
+          console.warn("Failed to parse currentBest for key:", detailKey);
+          currentBest = null;
+        }
+      } else if (currentBestRaw && typeof currentBestRaw === "object") {
+        currentBest = currentBestRaw as Entry;
+      }
 
-      if (score > bestScore) {
-        shouldUpdate = true;
-        finalScore = score;
-      } else if (currentBest.name !== name) {
-        shouldUpdate = true;
-        finalScore = bestScore;
-        finalAt = currentBest.at;
+      let shouldUpdate = false;
+      let finalScore = score;
+      let finalAt = Date.now();
+
+      if (currentBest && typeof currentBest === "object" && "score" in currentBest) {
+        const bestScore = Number(currentBest.score);
+
+        if (score > bestScore) {
+          shouldUpdate = true;
+          finalScore = score;
+        } else if (currentBest.name !== name) {
+          shouldUpdate = true;
+          finalScore = bestScore;
+          finalAt = currentBest.at;
+        } else {
+          return NextResponse.json({
+            ok: true,
+            kept: true,
+            ...(isDevelopment() && {
+              debug: { msg: "No changes", old: bestScore, new: score },
+            }),
+          });
+        }
       } else {
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        const entry: Entry = {
+          name: String(name),
+          score: Number(finalScore),
+          at: finalAt,
+          anonId: anonIdClean,
+        };
+
+        await kv.set(detailKey, JSON.stringify(entry));
+        await kv.zadd(KEY, { score: finalScore, member: key });
+
         return NextResponse.json({
           ok: true,
-          kept: true,
-          ...(isDevelopment() && {
-            debug: { msg: "No changes", old: bestScore, new: score },
-          }),
+          ...(isDevelopment() && { debug: { key, name, score: finalScore, updated: true } }),
         });
       }
-    } else {
-      shouldUpdate = true;
+
+      return NextResponse.json({ ok: true, ignored: true });
+    } finally {
+      await releaseUserLock(key, lockToken);
     }
-
-    if (shouldUpdate) {
-      const entry: Entry = {
-        name: String(name),
-        score: Number(finalScore),
-        at: finalAt,
-        anonId: anonIdClean,
-      };
-
-      await kv.set(detailKey, JSON.stringify(entry));
-      await kv.zadd(KEY, { score: finalScore, member: key });
-
-      return NextResponse.json({
-        ok: true,
-        ...(isDevelopment() && { debug: { key, name, score: finalScore, updated: true } }),
-      });
-    }
-
-    return NextResponse.json({ ok: true, ignored: true });
   } catch (err: unknown) {
     const details = toPublicErrorDetails(err);
     console.error("POST /api/highscores error", err);
