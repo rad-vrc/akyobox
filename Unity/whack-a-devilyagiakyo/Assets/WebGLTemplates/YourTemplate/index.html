@@ -229,6 +229,19 @@
                 white-space: nowrap;
                 border: 0;
             }
+
+            /* スマホ横画面ではゲーム表示を優先するため、名前入力とランキングを隠す */
+            @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+                #name-box,
+                #ranking {
+                    display: none !important;
+                }
+
+                #unity-container.unity-mobile {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                }
+            }
         </style>
     </head>
     <body>
@@ -294,6 +307,32 @@
                 const savedScore = localStorage.getItem('myHighScore');
                 if (savedScore) myBestScore = parseInt(savedScore, 10) || 0;
             } catch(e) {}
+
+            // ==========================================
+            // 動画プリロード管理
+            // ==========================================
+            const preloadedVideos = {};
+
+            function preloadVideo(src) {
+                if (preloadedVideos[src]) return;
+                preloadedVideos[src] = true;
+                console.log('JS: preloading video:', src);
+
+                fetch(src, { mode: 'cors', credentials: 'same-origin', cache: 'force-cache' })
+                    .then((res) => {
+                        if (!res.ok) {
+                            throw new Error(`prefetch failed: ${res.status}`);
+                        }
+                        return res.arrayBuffer();
+                    })
+                    .then(() => {
+                        console.log('JS: video prefetch complete:', src);
+                    })
+                    .catch(() => {
+                        preloadedVideos[src] = false;
+                        console.log('JS: video prefetch failed, will retry on next attempt:', src);
+                    });
+            }
 
             // ==========================================
             // Highscore & Name handling
@@ -462,11 +501,25 @@
                 updateShareButton();
 
                 try {
-                    await fetch(HIGHSCORE_ENDPOINT, {
+                    const res = await fetch(HIGHSCORE_ENDPOINT, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name, score, signature, anonId }),
                     });
+
+                    const result = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error(result.details || result.error || res.statusText);
+                    }
+
+                    if (result && result.skipped) {
+                        const rankingList = document.getElementById('rankingList');
+                        if (rankingList) {
+                            rankingList.innerHTML = '<li style="color:#ffb86b; font-size:20px;">Ranking save is disabled in this environment</li>';
+                        }
+                        return;
+                    }
+
                     fetchHighscores();
                 } catch (e) {
                     console.log('submit score error', e);
@@ -490,7 +543,7 @@
 
                 const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
                 // ポータルサイトのトップページをシェア先にする
-                const url = 'akyobox.vercel.app';
+                const url = 'https://akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
@@ -574,6 +627,10 @@
             window.PlayGameVideo = function () {
                 console.log('JS: PlayGameVideo called');
                 swapVideo(VIDEO_PATH_GAME, false, 'game');
+
+                // ゲーム本編中にエンディング動画をバックグラウンドでプリロード
+                // これにより PlayEndingVideo 呼び出し時のバッファリング遅延を最小化する
+                preloadVideo(VIDEO_PATH_ENDING);
             };
 
             // エンディング動画
