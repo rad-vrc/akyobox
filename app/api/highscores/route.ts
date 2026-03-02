@@ -84,28 +84,46 @@ export async function GET() {
 
     const entries: (Entry | null)[] = await Promise.all(
       members.map(async (member: string) => {
+        const detailKey = `detail:${member}`;
+        let raw: Entry | string | null = null;
+
         try {
-          const detailKey = `detail:${member}`;
-          const raw = await kv.get<Entry | string>(detailKey);
+          raw = await kv.get<Entry | string>(detailKey);
+        } catch (err: unknown) {
+          // 一時的なKV読み取り障害ではランキングメンバーを削除しない
+          console.warn("GET /api/highscores: failed to read detail key", {
+            detailKey,
+            error: err instanceof Error ? err.message : String(err),
+          });
+          return null;
+        }
 
-          if (!raw) {
-            await kv.zrem(KEY, member);
-            return null;
-          }
-
-          const entry = typeof raw === "string" ? (JSON.parse(raw) as Entry) : raw;
-
-          let maskedAnonId: string | undefined;
-          if (member.startsWith("user:")) {
-            const fullId = member.slice(5);
-            maskedAnonId = fullId.slice(0, 8);
-          }
-
-          return { ...entry, anonId: maskedAnonId } as Entry;
-        } catch {
+        if (!raw) {
+          // 詳細キーが欠落している stale member はクリーンアップする
           await kv.zrem(KEY, member);
           return null;
         }
+
+        let entry: Entry;
+        if (typeof raw === "string") {
+          try {
+            entry = JSON.parse(raw) as Entry;
+          } catch {
+            // 破損データはクリーンアップ対象
+            await kv.zrem(KEY, member);
+            return null;
+          }
+        } else {
+          entry = raw;
+        }
+
+        let maskedAnonId: string | undefined;
+        if (member.startsWith("user:")) {
+          const fullId = member.slice(5);
+          maskedAnonId = fullId.slice(0, 8);
+        }
+
+        return { ...entry, anonId: maskedAnonId } as Entry;
       })
     );
 
