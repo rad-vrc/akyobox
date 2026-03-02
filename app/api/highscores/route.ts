@@ -62,6 +62,11 @@ function hasMember(x: unknown): x is { member: unknown } {
   return typeof x === "object" && x !== null && "member" in x;
 }
 
+function toPublicErrorDetails(err: unknown): string {
+  if (!isDevelopment()) return "internal server error";
+  return err instanceof Error ? err.message : String(err);
+}
+
 async function cleanupLeaderboardMember(member: string, reason: string): Promise<void> {
   try {
     await kv.zrem(KEY, member);
@@ -149,7 +154,7 @@ export async function GET() {
 
     return NextResponse.json(publicEntries);
   } catch (err: unknown) {
-    const details = err instanceof Error ? err.message : String(err);
+    const details = toPublicErrorDetails(err);
     console.error("GET /api/highscores error", err);
     return NextResponse.json({ error: "failed to fetch scores", details }, { status: 500 });
   }
@@ -168,7 +173,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body: unknown = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "invalid request", details: "Invalid JSON payload" }, { status: 400 });
+    }
+
     const payload = typeof body === "object" && body !== null ? body : {};
     const record = payload as Record<string, unknown>;
 
@@ -253,7 +264,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, ignored: true });
   } catch (err: unknown) {
-    const details = err instanceof Error ? err.message : String(err);
+    const details = toPublicErrorDetails(err);
     console.error("POST /api/highscores error", err);
     return NextResponse.json({ error: "failed to submit score", details }, { status: 500 });
   }
