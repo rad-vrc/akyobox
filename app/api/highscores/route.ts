@@ -7,27 +7,54 @@ type Entry = {
   name: string;
   score: number;
   at: number;
-  anonId?: string; // ユーザー識別用（マスク済み）
+  anonId?: string;
+};
+
+type PublicEntry = {
+  name: string;
+  score: number;
+  at: number;
+  anonId?: string;
 };
 
 const KEY = "highscores";
 const LIMIT = 10;
+const LOCK_TTL_SECONDS = 5;
+const LOCK_WAIT_MS = 1200;
+const LOCK_RETRY_MS = 80;
+const RELEASE_LOCK_SCRIPT = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+end
+return 0
+`;
+
+function isDevelopment(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+function isKvConfigured(): boolean {
+  const url = process.env.KV_REST_API_URL?.trim();
+  const token = process.env.KV_REST_API_TOKEN?.trim();
+  if (!url || !token) return false;
+  if (!url.startsWith("https://")) return false;
+  if (url.includes("your_kv_rest_api_url")) return false;
+  if (token.includes("your_kv_rest_api_token")) return false;
+  return true;
+}
 
 function userKey(name: string, anonId?: string): string | null {
-  // 名前ベースではなく、常にユニークIDベースで管理する仕様に変更
-  // これにより「名前変更」が可能になり、匿名ユーザー同士の衝突を防ぐ
+  // 名前ベースではなく、常にユニークIDベースで管理する仕様
   if (anonId && anonId.length > 0) {
-      return `user:${anonId}`;
+    return `user:${anonId}`;
   }
-  // anonIdがない場合はnullを返す（登録拒否の判定に使用）
-  // これにより匿名ユーザー同士が同じキーを共有して上書きすることを防ぐ
+  void name;
   return null;
 }
 
 function sanitizeName(raw: unknown): string {
   if (typeof raw !== "string") return "Anonymous";
   const trimmed = raw.trim().replace(/\s+/g, " ");
-  // remove angle brackets and control chars
   // eslint-disable-next-line no-control-regex
   const cleaned = trimmed.replace(/[<>]/g, "").replace(/[\u0000-\u001F\u007F]/g, "");
   if (!cleaned) return "Anonymous";
@@ -40,155 +67,257 @@ function sanitizeScore(raw: unknown): number | null {
   return Math.floor(n);
 }
 
-export async function GET() {
+function hasMember(x: unknown): x is { member: unknown } {
+  return typeof x === "object" && x !== null && "member" in x;
+}
+
+function toPublicErrorDetails(err: unknown): string {
+  if (!isDevelopment()) return "internal server error";
+  return err instanceof Error ? err.message : String(err);
+}
+
+async function cleanupLeaderboardMember(member: string, reason: string): Promise<void> {
   try {
-    // rev: true でスコア降順（高い順）にソートされる
-    // 0 から LIMIT-1 (9) まで取得することでトップ10を取得
+    await kv.zrem(KEY, member);
+  } catch (err: unknown) {
+    console.warn("GET /api/highscores: failed to cleanup stale member", {
+      member,
+      reason,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function acquireUserLock(memberKey: string): Promise<string | null> {
+  const lockKey = `lock:${memberKey}`;
+  const token = crypto.randomUUID();
+  const deadline = Date.now() + LOCK_WAIT_MS;
+
+  while (Date.now() < deadline) {
+    const acquired = await kv.set(lockKey, token, { nx: true, ex: LOCK_TTL_SECONDS });
+    if (acquired === "OK") {
+      return token;
+    }
+    await sleep(LOCK_RETRY_MS);
+  }
+
+  return null;
+}
+
+async function releaseUserLock(memberKey: string, token: string): Promise<void> {
+  const lockKey = `lock:${memberKey}`;
+  try {
+    await kv.eval(RELEASE_LOCK_SCRIPT, [lockKey], [token]);
+  } catch (err: unknown) {
+    console.warn("POST /api/highscores: failed to release lock", {
+      lockKey,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+export async function GET() {
+  if (!isKvConfigured()) {
+    console.warn("GET /api/highscores skipped: KV is not configured");
+    if (!isDevelopment()) {
+      return NextResponse.json(
+        { error: "highscore backend unavailable", details: "KV is not configured" },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json([]);
+  }
+
+  try {
     const rawMembers = await kv.zrange(KEY, 0, LIMIT - 1, { rev: true });
     const members: string[] = rawMembers
       .map((m: unknown) =>
-        typeof m === "string"
-          ? m
-          : typeof m === "object" && m !== null && "member" in (m as Record<string, unknown>)
-          ? String((m as Record<string, unknown>).member)
-          : ""
+        typeof m === "string" ? m : hasMember(m) ? String(m.member) : ""
       )
       .filter((m: string) => m.length > 0);
 
-    const debugErrors: { member: string; error: string; key?: string }[] = [];
-    
-    // [Refactor] Hashではなく通常のGETを使う
     const entries: (Entry | null)[] = await Promise.all(
       members.map(async (member: string) => {
+        const detailKey = `detail:${member}`;
+        let raw: Entry | string | null = null;
+
         try {
-          const detailKey = `detail:${member}`;
-          const raw = await kv.get<Entry>(detailKey); // Vercel KVのgetは自動でJSONパースしてくれる場合があるが、明示的に型指定
-          
-          if (!raw) {
-              debugErrors.push({ member, error: "null raw (key not found)", key: detailKey });
-              // ランキングにあるのにデータがない場合は掃除
-              await kv.zrem(KEY, member);
-              return null;
-          }
-          
-          // kv.get はオブジェクトをそのまま返すことがある（自動パース）
-          // 文字列が返ってきた場合のみ parse する
-          const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
-          
-          // memberキーからanonIdを抽出してマスク（先頭8文字のみ公開）
-          // これによりクライアント側で自分のエントリを特定可能
-          let maskedAnonId: string | undefined;
-          if (member.startsWith('user:')) {
-            const fullId = member.slice(5); // 'user:' を除去
-            maskedAnonId = fullId.slice(0, 8); // 先頭8文字のみ（プライバシー保護）
-          }
-          
-          return { ...entry, anonId: maskedAnonId } as Entry;
-        } catch (e: unknown) {
-          const errorMsg = e instanceof Error ? e.message : String(e);
-          debugErrors.push({ member, error: errorMsg });
+          raw = await kv.get<Entry | string>(detailKey);
+        } catch (err: unknown) {
+          // 一時的なKV読み取り障害ではランキングメンバーを削除しない
+          console.warn("GET /api/highscores: failed to read detail key", {
+            detailKey,
+            error: err instanceof Error ? err.message : String(err),
+          });
           return null;
         }
+
+        if (!raw) {
+          // 詳細キーが欠落している stale member はクリーンアップする
+          await cleanupLeaderboardMember(member, "detail key missing");
+          return null;
+        }
+
+        let entry: Entry;
+        if (typeof raw === "string") {
+          try {
+            entry = JSON.parse(raw) as Entry;
+          } catch {
+            // 破損データはクリーンアップ対象
+            await cleanupLeaderboardMember(member, "detail JSON parse error");
+            return null;
+          }
+        } else {
+          entry = raw;
+        }
+
+        let maskedAnonId: string | undefined;
+        if (member.startsWith("user:")) {
+          const fullId = member.slice(5);
+          maskedAnonId = fullId.slice(0, 8);
+        }
+
+        return { ...entry, anonId: maskedAnonId } as Entry;
       })
     );
-    const parsed: Entry[] = entries.filter((e: Entry | null): e is Entry => !!e);
 
-    return NextResponse.json(parsed);
+    const parsed: Entry[] = entries.filter((e: Entry | null): e is Entry => !!e);
+    const publicEntries: PublicEntry[] = parsed.map(({ name, score, at, anonId }) => ({
+      name,
+      score,
+      at,
+      anonId,
+    }));
+
+    return NextResponse.json(publicEntries);
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
+    const details = toPublicErrorDetails(err);
     console.error("GET /api/highscores error", err);
-    return NextResponse.json({ error: "failed to fetch scores", details: errorMsg }, { status: 500 });
+    return NextResponse.json({ error: "failed to fetch scores", details }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
+  if (!isKvConfigured()) {
+    console.warn("POST /api/highscores skipped: KV is not configured");
+    if (!isDevelopment()) {
+      return NextResponse.json(
+        { error: "highscore backend unavailable", details: "KV is not configured" },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json({ ok: true, skipped: true, reason: "kv not configured" });
+  }
+
   try {
-    const body = await req.json();
-    const name = sanitizeName(body?.name);
-    const anonIdRaw = typeof body?.anonId === "string" ? body.anonId : undefined;
-    const anonIdClean =
-      anonIdRaw?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32) || undefined;
-    const score = sanitizeScore(body?.score);
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "invalid request", details: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const payload = typeof body === "object" && body !== null ? body : {};
+    const record = payload as Record<string, unknown>;
+
+    const name = sanitizeName(record.name);
+    const anonIdRaw = typeof record.anonId === "string" ? record.anonId : undefined;
+    const anonIdClean = anonIdRaw?.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 32) || undefined;
+    const score = sanitizeScore(record.score);
+
     if (score === null) {
       return NextResponse.json({ error: "invalid score" }, { status: 400 });
     }
 
-    // 既存スコアを確認し、同一ユーザーは最大スコアを維持
     const key = userKey(name, anonIdClean);
-    
-    // anonIdがない場合はスコア登録を拒否（匿名ユーザー同士の上書き防止）
     if (!key) {
-      return NextResponse.json({ 
-        error: "anonymous id required", 
-        details: "Please enable localStorage or use a supported browser" 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "anonymous id required",
+          details: "Please enable localStorage or use a supported browser",
+        },
+        { status: 400 }
+      );
     }
-    
-    // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
-    // キーに prefix をつける
+
     const detailKey = `detail:${key}`;
-
-    // 既存スコアを確認し、ハイスコア更新時のみ保存
-    const currentBestRaw = await kv.get<Entry | string>(detailKey);
-    let currentBest: Entry | null = null;
-    if (currentBestRaw) {
-      try {
-        currentBest = typeof currentBestRaw === "string"
-          ? (JSON.parse(currentBestRaw) as Entry)
-          : currentBestRaw;
-      } catch {
-        // 破損データ時は新規扱いで上書きし、次回以降に正常化する
-        currentBest = null;
-      }
+    const lockToken = await acquireUserLock(key);
+    if (!lockToken) {
+      return NextResponse.json(
+        { error: "conflict", details: "Please retry score submission" },
+        { status: 409 }
+      );
     }
-    // existing がオブジェクトとして返ってくるか文字列かはドライバ次第だが、Entry型としてキャスト
-    
-    let shouldUpdate = false;
-    let finalScore = score;
-    let finalAt = Date.now();
 
-    if (currentBest && typeof currentBest === 'object' && 'score' in currentBest) {
-        const bestScore = Number(currentBest.score);
-        
-        if (score > bestScore) {
-            // ハイスコア更新！ -> 全更新
-            shouldUpdate = true;
-            finalScore = score;
-        } else if (currentBest.name !== name) {
-            // スコアは更新してないが、名前が変わった -> 名前だけ更新（スコアは維持）
-            shouldUpdate = true;
-            finalScore = bestScore; // 既存のベストスコアを維持
-            finalAt = currentBest.at; // 日時も維持（あるいは更新？まあ維持でよい）
-        } else {
-            // スコアも名前も更新なし -> 何もしない
-            return NextResponse.json({ ok: true, kept: true, debug: { msg: "No changes", old: bestScore, new: score } });
+    try {
+      const currentBestRaw = await kv.get<Entry | string>(detailKey);
+
+      let currentBest: Entry | null = null;
+      if (typeof currentBestRaw === "string") {
+        try {
+          currentBest = JSON.parse(currentBestRaw) as Entry;
+        } catch {
+          console.warn("Failed to parse currentBest for key:", detailKey);
+          currentBest = null;
         }
-    } else {
-        // 新規ユーザー -> 保存
-        shouldUpdate = true;
-    }
+      } else if (currentBestRaw && typeof currentBestRaw === "object") {
+        currentBest = currentBestRaw as Entry;
+      }
+      let shouldUpdate = false;
+      let finalScore = score;
+      let finalAt = Date.now();
 
-    if (shouldUpdate) {
-        const entry: Entry = { 
-            name: String(name), 
-            score: Number(finalScore), 
-            at: finalAt
+      if (currentBest && typeof currentBest === "object" && "score" in currentBest) {
+        const bestScore = Number(currentBest.score);
+
+        if (score > bestScore) {
+          shouldUpdate = true;
+          finalScore = score;
+        } else if (currentBest.name !== name) {
+          shouldUpdate = true;
+          finalScore = bestScore;
+          finalAt = currentBest.at;
+        } else {
+          return NextResponse.json({
+            ok: true,
+            kept: true,
+            ...(isDevelopment() && {
+              debug: { msg: "No changes", old: bestScore, new: score },
+            }),
+          });
+        }
+      } else {
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        const entry: Entry = {
+          name: String(name),
+          score: Number(finalScore),
+          at: finalAt,
+          anonId: anonIdClean,
         };
 
-        // [Refactor] Hashではなく通常のSETを使う（[object Object]問題の回避）
-        const jsonVal = JSON.stringify(entry);
-        await kv.set(detailKey, jsonVal);
-        
-        // ソートセットにはユーザーキーのみをメンバーとして登録
+        await kv.set(detailKey, JSON.stringify(entry));
         await kv.zadd(KEY, { score: finalScore, member: key });
 
-        return NextResponse.json({ ok: true, debug: { key, name, score: finalScore, updated: true } });
+        return NextResponse.json({
+          ok: true,
+          ...(isDevelopment() && { debug: { key, name, score: finalScore, updated: true } }),
+        });
+      }
+
+      return NextResponse.json({ ok: true, ignored: true });
+    } finally {
+      await releaseUserLock(key, lockToken);
     }
-    
-    return NextResponse.json({ ok: true, ignored: true });
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
+    const details = toPublicErrorDetails(err);
     console.error("POST /api/highscores error", err);
-    return NextResponse.json({ error: "failed to submit score", details: errorMsg }, { status: 500 });
+    return NextResponse.json({ error: "failed to submit score", details }, { status: 500 });
   }
 }

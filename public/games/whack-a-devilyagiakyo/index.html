@@ -230,6 +230,19 @@
                 white-space: nowrap;
                 border: 0;
             }
+
+            /* スマホ横画面ではゲーム表示を優先するため、名前入力とランキングを隠す */
+            @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-width: 1024px) {
+                #name-box,
+                #ranking {
+                    display: none !important;
+                }
+
+                #unity-container.unity-mobile {
+                    width: 100vw !important;
+                    height: 100vh !important;
+                }
+            }
         </style>
     </head>
     <body>
@@ -288,7 +301,6 @@
             let inputLocked = true;
             const HIGHSCORE_ENDPOINT = '/api/highscores';
             let lastPostedScore = 0;
-            let lastPostedName = 'Anonymous';
             // ローカル保存された自己ベストを読み込む
             let myBestScore = 0;
             try {
@@ -486,7 +498,6 @@
                 const name = getPlayerName();
                 const anonId = getAnonId();
                 lastPostedScore = score;
-                lastPostedName = name;
 
                 // 自己ベスト更新なら保存
                 if (score > myBestScore) {
@@ -501,11 +512,25 @@
                 updateShareButton();
 
                 try {
-                    await fetch(HIGHSCORE_ENDPOINT, {
+                    const res = await fetch(HIGHSCORE_ENDPOINT, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name, score, signature, anonId }),
                     });
+
+                    const result = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error(result.details || result.error || res.statusText);
+                    }
+
+                    if (result && result.skipped) {
+                        const rankingList = document.getElementById('rankingList');
+                        if (rankingList) {
+                            rankingList.innerHTML = '<li style="color:#ffb86b; font-size:20px;">Ranking save is disabled in this environment</li>';
+                        }
+                        return;
+                    }
+
                     fetchHighscores();
                 } catch (e) {
                     console.log('submit score error', e);
@@ -529,7 +554,7 @@
 
                 const scoreText = `#デビルヤギAkyo叩き で ${targetScore} 点獲得したよ！`;
                 // ポータルサイトのトップページをシェア先にする
-                const url = 'akyobox.vercel.app';
+                const url = 'https://akyobox.vercel.app';
                 const text = encodeURIComponent(scoreText);
                 const shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(
                     url
