@@ -19,9 +19,10 @@ jobs:
     name: Check merge conflict
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR branch
+      - name: Checkout PR head
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Fetch latest main
@@ -48,10 +49,14 @@ jobs:
       - name: Comment on PR if conflict detected
         if: steps.merge-test.outputs.conflict == 'true'
         uses: actions/github-script@v7
+        env:
+          CONFLICT_FILES: ${{ steps.merge-test.outputs.files }}
         with:
           script: |
-            const files = `${{ steps.merge-test.outputs.files }}`;
+            const MARKER = '<!-- merge-conflict-bot -->';
+            const files = process.env.CONFLICT_FILES;
             const body = [
+              MARKER,
               '⚠️ **Merge Conflict Detected**',
               '',
               'このブランチは `main` と競合しています。マージ前に解決してください。',
@@ -70,14 +75,12 @@ jobs:
             ].join('\n');
 
             // 既存の競合コメントを探して更新（重複防止）
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Merge Conflict Detected')
-            );
+            const existing = comments.find(c => c.body && c.body.includes(MARKER));
 
             if (existing) {
               await github.rest.issues.updateComment({
@@ -100,14 +103,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: comments } = await github.rest.issues.listComments({
+            const MARKER = '<!-- merge-conflict-bot -->';
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            const existing = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('Merge Conflict Detected')
-            );
+            const existing = comments.find(c => c.body && c.body.includes(MARKER));
             if (existing) {
               await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
@@ -122,15 +124,14 @@ jobs:
     name: Re-check open PRs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Check all open PRs for conflicts
         uses: actions/github-script@v7
         with:
           script: |
+            const MARKER = '<!-- merge-conflict-bot -->';
+            const MAX_ATTEMPTS = 5;
+            const POLL_INTERVAL_MS = 3000;
+
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -139,36 +140,34 @@ jobs:
             });
 
             for (const pr of prs) {
-              // GitHub API の mergeable 状態を取得
-              const { data: detail } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-              });
-
-              // mergeable が null の場合は計算中なので少し待つ
-              let mergeable = detail.mergeable;
-              if (mergeable === null) {
-                await new Promise(r => setTimeout(r, 5000));
-                const { data: retry } = await github.rest.pulls.get({
+              // mergeable 状態をポーリングで取得（計算中は null が返る）
+              let mergeable = null;
+              for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+                const { data: detail } = await github.rest.pulls.get({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   pull_number: pr.number,
                 });
-                mergeable = retry.mergeable;
+                mergeable = detail.mergeable;
+                if (mergeable !== null) break;
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
               }
 
-              const { data: comments } = await github.rest.issues.listComments({
+              if (mergeable === null) {
+                core.warning(`PR #${pr.number}: mergeable state still unknown after ${MAX_ATTEMPTS} attempts, skipping`);
+                continue;
+              }
+
+              const comments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
               });
-              const existing = comments.find(c =>
-                c.user.type === 'Bot' && c.body.includes('Merge Conflict Detected')
-              );
+              const existing = comments.find(c => c.body && c.body.includes(MARKER));
 
               if (mergeable === false) {
                 const body = [
+                  MARKER,
                   '⚠️ **Merge Conflict Detected**',
                   '',
                   `\`main\` が更新され、このブランチ (\`${pr.head.ref}\`) と競合が発生しました。`,
