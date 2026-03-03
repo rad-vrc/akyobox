@@ -231,10 +231,11 @@
                 border: 0;
             }
 
-            /* スマホ横画面ではゲーム表示を優先するため、名前入力とランキングを隠す */
+            /* スマホ横画面ではゲーム表示を優先するため、名前入力・ランキング・シェアボタンを隠す */
             @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-width: 1024px) {
                 #name-box,
-                #ranking {
+                #ranking,
+                #share-button {
                     display: none !important;
                 }
 
