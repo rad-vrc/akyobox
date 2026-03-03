@@ -264,7 +264,6 @@ export async function POST(req: NextRequest) {
       } else if (currentBestRaw && typeof currentBestRaw === "object") {
         currentBest = currentBestRaw as Entry;
       }
-
       let shouldUpdate = false;
       let finalScore = score;
       let finalAt = Date.now();
