@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext ts,tsx --max-warnings=0",
-    "deadcode": "knip"
+    "deadcode": "knip",
+    "prepare": "node -e \"try{require('child_process').execSync('git rev-parse --git-dir',{stdio:'ignore'});require('child_process').execSync('git config core.hooksPath .githooks')}catch{}\""
   },
   "dependencies": {
     "@vercel/kv": "^3.0.0",

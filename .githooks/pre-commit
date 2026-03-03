@@ -1,0 +1,45 @@
+#!/bin/sh
+# ---------------------------------------------------------------
+# pre-commit hook: Unity WebGL テンプレート同期リマインダー
+#
+# public/games/whack-a-devilyagiakyo/index.html をコミットするとき、
+# Unity テンプレート側にも変更が反映されているかリマインドする。
+#
+# ※ Unity/ は .gitignore で無視されているため git 上では追跡できない。
+#    このフックは「忘れ防止のリマインダー」として機能する。
+#
+# スキップ方法:
+#   SKIP_TEMPLATE_CHECK=1 git commit -m "..."
+# ---------------------------------------------------------------
+
+PUBLIC="public/games/whack-a-devilyagiakyo/index.html"
+TEMPLATE="Unity/whack-a-devilyagiakyo/Assets/WebGLTemplates/YourTemplate/index.html"
+
+staged=$(git diff --cached --name-only)
+
+echo "$staged" | grep -qF "$PUBLIC" || exit 0
+
+# public 側の index.html が変更されている場合のみチェック
+if [ "$SKIP_TEMPLATE_CHECK" = "1" ]; then
+    exit 0
+fi
+
+# Unity テンプレートが存在するかチェック
+if [ ! -f "$TEMPLATE" ]; then
+    # テンプレートが存在しない（Unity未セットアップなど）→ スキップ
+    exit 0
+fi
+
+echo ""
+echo "⚠️  REMINDER: $PUBLIC が変更されています。"
+echo ""
+echo "   Unity テンプレートにも同じ変更を反映してください:"
+echo "   $TEMPLATE"
+echo ""
+echo "   次回の Unity ビルド時にテンプレートから再生成され、"
+echo "   public 側の変更が上書きされる可能性があります。"
+echo ""
+echo "   既に反映済み、または不要な場合は:"
+echo "   SKIP_TEMPLATE_CHECK=1 git commit -m \"...\""
+echo ""
+exit 1
