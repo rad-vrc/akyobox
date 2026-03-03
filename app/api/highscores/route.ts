@@ -22,6 +22,12 @@ const LIMIT = 10;
 const LOCK_TTL_SECONDS = 5;
 const LOCK_WAIT_MS = 1200;
 const LOCK_RETRY_MS = 80;
+const RELEASE_LOCK_SCRIPT = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+end
+return 0
+`;
 
 function isDevelopment(): boolean {
   return process.env.NODE_ENV === "development";
@@ -105,10 +111,7 @@ async function acquireUserLock(memberKey: string): Promise<string | null> {
 async function releaseUserLock(memberKey: string, token: string): Promise<void> {
   const lockKey = `lock:${memberKey}`;
   try {
-    const current = await kv.get<string>(lockKey);
-    if (current === token) {
-      await kv.del(lockKey);
-    }
+    await kv.eval(RELEASE_LOCK_SCRIPT, [lockKey], [token]);
   } catch (err: unknown) {
     console.warn("POST /api/highscores: failed to release lock", {
       lockKey,
