@@ -1,6 +1,6 @@
 # Akyobox
 
-最終更新日: 2026-02-24
+最終更新日: 2026-03-11
 
 ## 概要
 
@@ -78,6 +78,17 @@ Unity/
 `/games/whack-a-devilyagiakyo/` は `public` 配下の静的 Unity WebGL を配信します。  
 背景の見え方はポータルと揃えるため、`index.html` と `TemplateData/style.css` の両方で背景指定を持たせています。
 
+### モバイル横向き時のUI挙動
+
+ゲーム操作を優先するため、モバイル横向き（タッチデバイス）では以下を非表示にします。
+
+- ランキングパネル（`#ranking`）
+- X 共有ボタン（`#share-button`）
+
+対象実装:
+
+- `public/games/whack-a-devilyagiakyo/index.html` 内 CSS の media query
+
 ### テンプレート同期（重要）
 
 `Unity/whack-a-devilyagiakyo/Assets/WebGLTemplates/YourTemplate/index.html` を正として運用します。  
@@ -85,6 +96,8 @@ Unity再ビルド時に `public/games/whack-a-devilyagiakyo/index.html` が上�
 
 - 変更時は `Unity/.../YourTemplate/index.html` と `public/.../index.html` の両方を同時更新する
 - PR前に2ファイル差分を確認する（乖離がないことを確認）
+- `npm install` 時の `prepare` スクリプトで `.githooks/pre-commit` が有効化され、`public/.../index.html` だけをコミットしようとした場合に同期漏れリマインダーでコミットを停止する
+- 意図的にスキップする場合のみ `SKIP_TEMPLATE_CHECK=1 git commit ...` を使う
 
 ## ローカル開発
 
@@ -103,3 +116,12 @@ npm run dev
 - ホスティング先: Vercel
 - 通常運用: `devlop` で作業し、必要に応じて `main` へ反映
 - Brotli配信設定: `vercel.json`（Unity Build の `.br` 配信ヘッダー/rewrites）
+
+## PR競合チェック（GitHub Actions）
+
+`main` 向けPRと `main` 更新時に、`.github/workflows/conflict-check.yml` がマージ競合を自動検知します。
+
+- PR更新時: 対象PRブランチに `main` をマージ可能か検証
+- `main` 更新時: 既存のオープンPRを再検査
+- 競合あり: PRコメントで通知（`<!-- merge-conflict-bot -->` マーカー付き）
+- 解消後: 既存の競合通知コメントを自動削除
